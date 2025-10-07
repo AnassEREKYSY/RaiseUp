@@ -1,0 +1,17 @@
+# Global ignore for all subprojects
+**/node_modules
+**/dist
+**/tmp
+**/coverage
+**/.angular
+**/.env
+**/.env.*
+
+# Docker
+docker/*.env.db
+docker/*.log
+docker/volumes/
+
+# OS
+.DS_Store
+Thumbs.db
