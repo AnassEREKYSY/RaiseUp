@@ -10,5 +10,6 @@ router.get('one/:id',authenticateToken, controller.getById);
 router.post('create/',authenticateToken, controller.create);
 router.put('update/:id',authenticateToken, controller.update);
 router.delete('delete/:id',authenticateToken, controller.delete);
+router.get('/search', authenticateToken, controller.search);
 
 export default router;

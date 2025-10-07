@@ -1,5 +1,6 @@
 import { prisma } from '../prisma';
 import { CreateStartupDto, UpdateStartupDto } from '../dtos/startup.dto';
+import { Industry, Stage } from '../models/enums';
 
 export class StartupService {
   async getAll() {
@@ -22,5 +23,19 @@ export class StartupService {
 
   async delete(id: string) {
     return prisma.startupProfile.delete({ where: { id } });
+  }
+
+  async search(filters: {industry?: Industry;stage?: Stage;fundingNeeded?: number;country?: string;createdAt?: string}) {
+    return prisma.startupProfile.findMany({
+      where: {
+        ...(filters.industry ? { industry: filters.industry } : {}),
+        ...(filters.stage ? { stage: filters.stage } : {}),
+        ...(filters.country ? { country: { contains: filters.country, mode: 'insensitive' } } : {}),
+        ...(filters.fundingNeeded ? { fundingNeeded: { lte: filters.fundingNeeded } } : {}),
+        ...(filters.createdAt ? { createdAt: { gte: new Date(filters.createdAt) } } : {}),
+      },
+      include: { user: true, projects: true },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 }

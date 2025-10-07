@@ -24,4 +24,15 @@ export class InvestorController {
     async delete(req: Request, res: Response) {
          await service.delete(req.params.id); res.status(204).send(); 
     }
+
+    async search(req: Request, res: Response) {
+        const { industry, stagePreference, location, createdAt } = req.query;
+        const results = await service.search({
+            industry: industry as any,
+            stagePreference: stagePreference as any,
+            location: location as string,
+            createdAt: createdAt as string,
+        });
+        res.json(results);
+    }
 }

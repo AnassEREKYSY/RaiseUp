@@ -1,5 +1,6 @@
 import { prisma } from '../prisma';
 import { CreateInvestorDto, UpdateInvestorDto } from '../dtos/investor.dto';
+import { Industry, Stage } from '../models/enums';
 
 export class InvestorService {
   async getAll() {
@@ -22,5 +23,26 @@ export class InvestorService {
 
   async delete(id: string) {
     return prisma.investorProfile.delete({ where: { id } });
+  }
+
+  async search(filters: {industry?: Industry;stagePreference?: Stage;location?: string;createdAt?: string}) {
+    return prisma.investorProfile.findMany({
+      where: {
+        ...(filters.industry && {
+          industries: { has: filters.industry }
+        }),
+        ...(filters.stagePreference && {
+          stagePreference: { has: filters.stagePreference }
+        }),
+        ...(filters.location && {
+          location: { contains: filters.location, mode: 'insensitive' }
+        }),
+        ...(filters.createdAt && {
+          createdAt: { gte: new Date(filters.createdAt) }
+        }),
+      },
+      include: { user: true },
+      orderBy: { createdAt: 'desc' },
+    });
   }
 }

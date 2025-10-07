@@ -25,4 +25,16 @@ export class StartupController {
     await service.delete(req.params.id);
     res.status(204).send();
   }
+
+  async search(req: Request, res: Response) {
+    const { industry, stage, fundingNeeded, country, createdAt } = req.query;
+    const results = await service.search({
+      industry: industry as any,
+      stage: stage as any,
+      fundingNeeded: fundingNeeded ? Number(fundingNeeded) : undefined,
+      country: country as string,
+      createdAt: createdAt as string,
+    });
+    res.json(results);
+  }
 }
