@@ -1,0 +1,32 @@
+export enum Role {
+  STARTUP = 'STARTUP',
+  INVESTOR = 'INVESTOR',
+  ADMIN = 'ADMIN'
+}
+
+export enum Stage {
+  IDEA = 'IDEA',
+  MVP = 'MVP',
+  GROWTH = 'GROWTH',
+  SCALE = 'SCALE',
+  EXIT = 'EXIT'
+}
+
+export enum Industry {
+  FINTECH = 'FINTECH',
+  HEALTHCARE = 'HEALTHCARE',
+  EDUCATION = 'EDUCATION',
+  ECOMMERCE = 'ECOMMERCE',
+  AI = 'AI',
+  BLOCKCHAIN = 'BLOCKCHAIN',
+  GREEN_TECH = 'GREEN_TECH',
+  LOGISTICS = 'LOGISTICS',
+  AGRITECH = 'AGRITECH',
+  OTHER = 'OTHER'
+}
+
+export enum MatchStatus {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  REJECTED = 'REJECTED'
+}

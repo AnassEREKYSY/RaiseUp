@@ -1,15 +1,154 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+}
+
+//
+// ─── ENUMS ───────────────────────────────────────────────────────────────
+//
+
+enum Role {
+  STARTUP
+  INVESTOR
+  ADMIN
+}
+
+enum Stage {
+  IDEA
+  MVP
+  GROWTH
+  SCALE
+  EXIT
+}
+
+enum Industry {
+  FINTECH
+  HEALTHCARE
+  EDUCATION
+  ECOMMERCE
+  AI
+  BLOCKCHAIN
+  GREEN_TECH
+  LOGISTICS
+  AGRITECH
+  OTHER
+}
+
+enum MatchStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+//
+// ─── MODELS ───────────────────────────────────────────────────────────────
+//
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  fullName  String
+  avatarUrl String?
+  role      Role     @default(STARTUP)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  startupProfile  StartupProfile?
+  investorProfile InvestorProfile?
+  messages        Message[]        @relation("UserMessages")
+  sentMatches     Match[]          @relation("StartupMatches")
+  receivedMatches Match[]          @relation("InvestorMatches")
+  notifications   Notification[]
+}
+
+model StartupProfile {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  companyName   String
+  description   String?
+  industry      Industry
+  stage         Stage
+  fundingNeeded Float?
+  teamSize      Int?
+  website       String?
+  country       String?
+  traction      String?
+  pitchDeckUrl  String?
+  createdAt     DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id])
+  projects Project[]
+}
+
+model InvestorProfile {
+  id              String     @id @default(cuid())
+  userId          String     @unique
+  companyName     String?
+  investmentRange String?
+  industries      Industry[]
+  location        String?
+  stagePreference Stage[]
+  website         String?
+  bio             String?
+  createdAt       DateTime   @default(now())
+
+  user    User    @relation(fields: [userId], references: [id])
+  matches Match[] @relation("InvestorProfileMatches")
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  startupId   String
+  title       String
+  description String
+  fundingGoal Float?
+  industry    Industry
+  createdAt   DateTime @default(now())
+
+  startup StartupProfile @relation(fields: [startupId], references: [id])
+  matches Match[]
+}
+
+model Match {
+  id                String      @id @default(cuid())
+  startupId         String
+  investorId        String
+  projectId         String?
+  investorProfileId String?
+  status            MatchStatus @default(PENDING)
+  createdAt         DateTime    @default(now())
+
+  startup         User             @relation("StartupMatches", fields: [startupId], references: [id], map: "fk_match_startup_user")
+  investor        User             @relation("InvestorMatches", fields: [investorId], references: [id], map: "fk_match_investor_user")
+  investorProfile InvestorProfile? @relation("InvestorProfileMatches", fields: [investorProfileId], references: [id], map: "fk_match_investor_profile")
+  project         Project?         @relation(fields: [projectId], references: [id])
+  messages        Message[]
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  matchId   String
+  senderId  String
+  content   String
+  createdAt DateTime @default(now())
+
+  match  Match @relation(fields: [matchId], references: [id])
+  sender User  @relation("UserMessages", fields: [senderId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  message   String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
 }
