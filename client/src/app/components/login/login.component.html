@@ -1,41 +1,38 @@
-<div class="auth-wrapper">
+<div class="auth-screen">
   <div class="auth-card">
-    <h2>Login</h2>
-    <p class="subtitle">Hi, Welcome back</p>
+    <div class="auth-header">
+      <h1>Welcome back</h1>
+      <p>Login to your account</p>
+    </div>
 
     <form [formGroup]="form" (ngSubmit)="onSubmit()">
-      <div class="input-group">
-        <label>Email</label>
-        <input type="email" formControlName="email" placeholder="Eg. johndoe@email.com" />
+      <div class="form-row">
+        <label class="label">Email</label>
+        <input class="input" type="email" formControlName="email" placeholder="john@company.com" />
       </div>
 
-      <div class="input-group password-group">
-        <label>Password</label>
-        <div class="password-wrapper">
-          <input [type]="showPassword ? 'text' : 'password'"
-                 formControlName="password"
-                 placeholder="Enter your password" />
+      <div class="form-row">
+        <label class="label">Password</label>
+        <div class="password-wrap">
+          <input class="input" [type]="showPassword ? 'text' : 'password'"
+                 formControlName="password" placeholder="••••••••" />
           <button type="button" class="eye-btn" (click)="togglePassword()">
             <i class="material-icons">{{ showPassword ? 'visibility_off' : 'visibility' }}</i>
           </button>
         </div>
       </div>
 
-      <div class="options">
-        <label>
-          <input type="checkbox" /> Remember me
-        </label>
-        <a href="#" class="forgot">Forgot Password?</a>
+      <div class="row-between">
+        <label><input type="checkbox" />&nbsp;Remember me</label>
+        <a class="link" href="#">Forgot Password?</a>
       </div>
 
-      <button type="submit" [disabled]="loading">Login</button>
+      <button class="btn btn-primary" type="submit" [disabled]="loading">Login</button>
     </form>
 
-    <p class="error" *ngIf="errorMsg">{{ errorMsg }}</p>
-
-    <p class="switch">
+    <div class="helper">
       Not registered yet?
-      <a routerLink="/register">Create an account ↗</a>
-    </p>
+      <a routerLink="/register" class="link">Create an account ↗</a>
+    </div>
   </div>
 </div>
