@@ -1,0 +1,47 @@
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <h2>Create Account</h2>
+    <p class="subtitle">Join the platform</p>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="input-group">
+        <label>Role</label>
+        <select formControlName="role">
+          <option value="STARTUP">Startup</option>
+          <option value="INVESTOR">Investor</option>
+        </select>
+      </div>
+
+      <div class="input-group">
+        <label>Full Name</label>
+        <input formControlName="fullName" placeholder="Your full name" />
+      </div>
+
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" formControlName="email" placeholder="Eg. johndoe@email.com" />
+      </div>
+
+      <div class="input-group password-group">
+        <label>Password</label>
+        <div class="password-wrapper">
+          <input [type]="showPassword ? 'text' : 'password'"
+                 formControlName="password"
+                 placeholder="Enter your password" />
+          <button type="button" class="eye-btn" (click)="togglePassword()">
+            <i class="material-icons">{{ showPassword ? 'visibility_off' : 'visibility' }}</i>
+          </button>
+        </div>
+      </div>
+
+      <button type="submit" [disabled]="loading">Register</button>
+    </form>
+
+    <p class="error" *ngIf="errorMsg">{{ errorMsg }}</p>
+
+    <p class="switch">
+      Already have an account?
+      <a routerLink="/login">Login here ↗</a>
+    </p>
+  </div>
+</div>

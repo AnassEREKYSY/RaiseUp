@@ -1,0 +1,149 @@
+.auth-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background: #fafafa;
+}
+
+.auth-card {
+  background: #fff;
+  width: 400px;
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.08);
+  text-align: left;
+
+  h2 {
+    font-size: 1.8rem;
+    margin-bottom: 0.3rem;
+    font-weight: 700;
+    color: #1e1e1e;
+  }
+
+  .subtitle {
+    margin-bottom: 1.5rem;
+    color: #666;
+  }
+
+  .input-group {
+    margin-bottom: 1.2rem;
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      margin-bottom: 0.4rem;
+      color: #444;
+      font-weight: 500;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.95rem;
+      transition: 0.2s ease-in-out;
+
+      &:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+      }
+    }
+  }
+
+  .password-group {
+    position: relative;
+
+    .password-wrapper {
+      display: flex;
+      align-items: center;
+      position: relative;
+
+      input {
+        width: 100%;
+        padding-right: 2.5rem;
+      }
+
+      .eye-btn {
+        position: absolute;
+        right: 0.6rem;
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #888;
+        transition: 0.2s;
+
+        &:hover {
+          color: #4f46e5;
+        }
+
+        i {
+          font-size: 20px;
+        }
+      }
+    }
+  }
+
+  .options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.2rem;
+
+    label {
+      font-size: 0.9rem;
+      color: #555;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .forgot {
+      font-size: 0.9rem;
+      color: #4f46e5;
+      text-decoration: none;
+    }
+  }
+
+  button {
+    width: 100%;
+    background: #4f46e5;
+    color: white;
+    border: none;
+    padding: 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: background 0.2s;
+
+    &:hover {
+      background: #4338ca;
+    }
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+
+  .error {
+    color: #d32f2f;
+    font-size: 0.9rem;
+    margin-top: 0.7rem;
+  }
+
+  .switch {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.95rem;
+
+    a {
+      color: #4f46e5;
+      text-decoration: none;
+      font-weight: 500;
+    }
+  }
+}

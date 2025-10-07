@@ -1,0 +1,41 @@
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <h2>Login</h2>
+    <p class="subtitle">Hi, Welcome back</p>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+      <div class="input-group">
+        <label>Email</label>
+        <input type="email" formControlName="email" placeholder="Eg. johndoe@email.com" />
+      </div>
+
+      <div class="input-group password-group">
+        <label>Password</label>
+        <div class="password-wrapper">
+          <input [type]="showPassword ? 'text' : 'password'"
+                 formControlName="password"
+                 placeholder="Enter your password" />
+          <button type="button" class="eye-btn" (click)="togglePassword()">
+            <i class="material-icons">{{ showPassword ? 'visibility_off' : 'visibility' }}</i>
+          </button>
+        </div>
+      </div>
+
+      <div class="options">
+        <label>
+          <input type="checkbox" /> Remember me
+        </label>
+        <a href="#" class="forgot">Forgot Password?</a>
+      </div>
+
+      <button type="submit" [disabled]="loading">Login</button>
+    </form>
+
+    <p class="error" *ngIf="errorMsg">{{ errorMsg }}</p>
+
+    <p class="switch">
+      Not registered yet?
+      <a routerLink="/register">Create an account ↗</a>
+    </p>
+  </div>
+</div>
