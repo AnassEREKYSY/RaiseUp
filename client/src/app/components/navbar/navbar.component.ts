@@ -14,8 +14,13 @@ import { AuthService } from '../../services/auth.service';
 export class NavbarComponent {
   @Output() searchSubmit = new EventEmitter<string>();
   form!: FormGroup;
+  hasNewNotifications = true;
 
-  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private auth: AuthService,
+    private router: Router
+  ) {
     this.form = this.fb.group({ q: [''] });
   }
 
@@ -26,6 +31,11 @@ export class NavbarComponent {
 
   goProfile() {
     this.router.navigate(['/profile']);
+  }
+
+  openNotifications() {
+    console.log('Notifications clicked!');
+    this.hasNewNotifications = false;
   }
 
   logout() {

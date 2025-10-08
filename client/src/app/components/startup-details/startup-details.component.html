@@ -1,0 +1,70 @@
+<div class="details-wrapper" *ngIf="!loading; else loader">
+  <div class="details-card">
+    <div class="image-section">
+      <img
+        [src]="user?.avatarUrl || 'assets/default-startup.jpg'"
+        alt="Startup Logo"
+        class="startup-image"
+      />
+    </div>
+
+    <div class="info-section">
+      <h1 class="company-name">{{ startup.companyName }}</h1>
+
+      <div class="tags-container">
+        <span class="tag">{{ startup.industry }}</span>
+        <span class="tag stage-tag">{{ startup.stage }}</span>
+      </div>
+
+      <div class="meta-info">
+        <div class="meta-item" *ngIf="startup.teamSize">
+          <mat-icon>groups</mat-icon>
+          <span>Team Size: <strong>{{ startup.teamSize }}</strong></span>
+        </div>
+
+        <div class="meta-item" *ngIf="startup.fundingNeeded">
+          <mat-icon>paid</mat-icon>
+          <span>Funding Needed: <strong>{{ startup.fundingNeeded | number }} USD</strong></span>
+        </div>
+
+        <div class="meta-item" *ngIf="startup.country">
+          <mat-icon>public</mat-icon>
+          <span>Country: <strong>{{ startup.country }}</strong></span>
+        </div>
+
+        <div class="meta-item" *ngIf="startup.website">
+          <mat-icon>language</mat-icon>
+          <a [href]="startup.website" target="_blank">{{ startup.website }}</a>
+        </div>
+
+        <div class="meta-item" *ngIf="startup.createdAt">
+          <mat-icon>calendar_today</mat-icon>
+          <span>Created: <strong>{{ startup.createdAt | date }}</strong></span>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="section" *ngIf="startup.description">
+        <h3>Description</h3>
+        <p>{{ startup.description }}</p>
+      </div>
+
+      <div class="section" *ngIf="startup.traction">
+        <h3>Traction</h3>
+        <p>{{ startup.traction }}</p>
+      </div>
+
+      <div class="section" *ngIf="startup.pitchDeckUrl">
+        <h3>Pitch Deck</h3>
+        <a [href]="startup.pitchDeckUrl" target="_blank" class="pitch-link">
+          <mat-icon>picture_as_pdf</mat-icon> View Pitch Deck
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loader>
+  <div class="loader">Loading startup details...</div>
+</ng-template>

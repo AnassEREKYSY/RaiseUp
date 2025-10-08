@@ -1,0 +1,154 @@
+.details-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0px;
+  background: var(--bg);
+}
+
+.details-card {
+  display: flex;
+  flex-wrap: wrap;
+  background: var(--card);
+  border-radius: 24px;
+  box-shadow: 0 2px 6px rrgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  max-width: 1200px;
+  width: 100%;
+  transition: all 0.3s ease;
+}
+
+.image-section {
+  flex: 1.2;
+  background: linear-gradient(145deg, #eef1ff 0%, #f6f7fb 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 450px;
+  padding: 40px;
+
+  .startup-image {
+    width: 100%;
+    max-width: 500px;
+    height: auto;
+    border-radius: 20px;
+    object-fit: cover;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease;
+
+    &:hover {
+      transform: scale(1.03);
+    }
+  }
+}
+
+.info-section {
+  flex: 1.8;
+  padding: 50px 60px;
+  display: flex;
+  flex-direction: column;
+
+  .company-name {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 10px;
+  }
+
+  .tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 24px;
+
+    .tag {
+      background: #eef1ff;
+      color: var(--primary);
+      padding: 6px 12px;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .stage-tag {
+      background: #ede9fe;
+      color: #4f46e5;
+    }
+  }
+
+  .meta-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 24px;
+    font-size: 15px;
+    margin-bottom: 24px;
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text);
+
+      mat-icon {
+        color: var(--primary);
+        font-size: 20px;
+      }
+
+      a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+  }
+
+  .divider {
+    border: none;
+    height: 1px;
+    background: var(--border);
+    margin: 20px 0 30px;
+  }
+
+  .section {
+    margin-bottom: 28px;
+
+    h3 {
+      color: var(--primary);
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    p {
+      color: var(--text);
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .pitch-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: none;
+
+      mat-icon {
+        font-size: 18px;
+      }
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.loader {
+  color: var(--primary);
+  font-weight: 500;
+  text-align: center;
+  padding: 60px;
+}

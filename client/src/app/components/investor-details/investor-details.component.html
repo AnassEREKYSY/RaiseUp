@@ -1,0 +1,71 @@
+<div class="details-wrapper" *ngIf="!loading; else loader">
+  <div class="details-card">
+    <!-- LEFT SIDE -->
+    <div class="image-section">
+      <img
+        [src]="user?.avatarUrl || 'assets/default-investor.jpg'"
+        alt="Investor Logo"
+        class="investor-image"
+      />
+    </div>
+
+    <!-- RIGHT SIDE -->
+    <div class="info-section">
+      <h1 class="company-name">
+        {{ investor.companyName || user?.fullName }}
+      </h1>
+      <p class="industry-tag">Investor Profile</p>
+
+      <div class="meta-info">
+        <div class="meta-item" *ngIf="investor.investmentRange">
+          <mat-icon>paid</mat-icon>
+          <span>Investment Range: <strong>{{ investor.investmentRange }}</strong></span>
+        </div>
+
+        <div class="meta-item" *ngIf="investor.location">
+          <mat-icon>public</mat-icon>
+          <span>Location: <strong>{{ investor.location }}</strong></span>
+        </div>
+
+        <div class="meta-item" *ngIf="investor.website">
+          <mat-icon>language</mat-icon>
+          <a [href]="investor.website" target="_blank">{{ investor.website }}</a>
+        </div>
+
+        <div class="meta-item" *ngIf="investor.createdAt">
+          <mat-icon>calendar_today</mat-icon>
+          <span>Joined: <strong>{{ investor.createdAt | date }}</strong></span>
+        </div>
+      </div>
+
+      <hr class="divider" />
+
+      <div class="section" *ngIf="investor.industries?.length">
+        <h3>Industries of Interest</h3>
+        <div class="tags">
+          <span *ngFor="let industry of investor.industries" class="tag">
+            {{ industry }}
+          </span>
+        </div>
+      </div>
+
+      <div class="section" *ngIf="investor.stagePreference?.length">
+        <h3>Stage Preference</h3>
+        <div class="tags">
+          <span *ngFor="let stage of investor.stagePreference" class="tag">
+            {{ stage }}
+          </span>
+        </div>
+      </div>
+
+      <div class="section" *ngIf="investor.bio">
+        <h3>About</h3>
+        <p>{{ investor.bio }}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #loader>
+  <div class="loader">Loading investor details...</div>
+</ng-template>

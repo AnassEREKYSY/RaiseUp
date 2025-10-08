@@ -1,7 +1,10 @@
-<div class="card">
+<div class="card" (click)="openDetails()">
   <div class="image-container">
-    <img [src]="user.avatarUrl || 'assets/default-startup.jpg'" alt="Startup Logo" />
-    <button class="heart-btn" (click)="toggleLike()">
+    <img
+      [src]="user.avatarUrl || 'assets/default-startup.jpg'"
+      alt="Startup Logo"
+    />
+    <button class="heart-btn" (click)="toggleLike(); $event.stopPropagation()">
       <mat-icon>{{ liked ? 'favorite' : 'favorite_border' }}</mat-icon>
     </button>
   </div>
@@ -11,7 +14,9 @@
 
     <div class="info-row">
       <span class="stage">{{ profile.stage }}</span>
-      <span class="funding" *ngIf="profile.fundingNeeded">{{ profile.fundingNeeded | number }} $</span>
+      <span class="funding" *ngIf="profile.fundingNeeded">
+        💰 {{ profile.fundingNeeded | number }} USD
+      </span>
     </div>
   </div>
 </div>
