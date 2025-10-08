@@ -36,4 +36,14 @@ export class AuthService {
   get currentUser() {
     return JSON.parse(localStorage.getItem('user') || '{}');
   }
+
+  getUserRole(): 'INVESTOR' | 'STARTUP' | null {
+    const user = this.currentUser;
+    return user?.role || null;
+  }
+
+  getToken(): string | null {
+    return localStorage.getItem('token');
+  }
+
 }

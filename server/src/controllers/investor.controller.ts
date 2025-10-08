@@ -14,7 +14,8 @@ export class InvestorController {
     }
 
     async create(req: Request, res: Response) {
-         res.status(201).json(await service.create(req.body.userId, req.body)); 
+    const created = await service.create(req.body.userId, req.body);
+    res.status(201).json({ ...created, hasProfile: true });
     }
 
     async update(req: Request, res: Response) {

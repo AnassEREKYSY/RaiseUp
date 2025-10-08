@@ -1,0 +1,200 @@
+<div class="onboarding">
+  <div class="card">
+
+    <div class="header">
+      <div class="badge">{{ role === 'INVESTOR' ? 'Investor' : 'Startup' }} onboarding</div>
+      <h1>Complete your profile</h1>
+      <p class="muted">
+        Let’s set up your {{ role === 'INVESTOR' ? 'investment preferences' : 'startup profile' }}.
+        It takes less than 2 minutes.
+      </p>
+
+      <div class="steps">
+        <div class="step" [class.active]="currentStep>=1"><span>1</span><small>Basics</small></div>
+        <div class="line" [class.active]="currentStep>1"></div>
+        <div class="step" [class.active]="currentStep>=2"><span>2</span><small>Details</small></div>
+        <div class="line" [class.active]="currentStep>2"></div>
+        <div class="step" [class.active]="currentStep>=3"><span>3</span><small>Review</small></div>
+      </div>
+    </div>
+
+    <div class="progress"><div class="bar" [style.width.%]="(currentStep/totalSteps)*100"></div></div>
+
+    <div class="step-title">
+      <h3>{{ stepTitle }}</h3>
+      <p *ngIf="currentStep===1" class="muted">Provide your core information. You can edit everything later.</p>
+      <p *ngIf="currentStep===2" class="muted">Fine-tune your {{ role === 'INVESTOR' ? 'investment scope' : 'product details' }}.</p>
+      <p *ngIf="currentStep===3" class="muted">Quick final touch before publishing your profile.</p>
+    </div>
+
+    <form [formGroup]="form" class="form">
+
+      <ng-container *ngIf="currentStep===1">
+        <ng-container *ngIf="role==='INVESTOR'">
+          <div class="field">
+            <label>Company Name</label>
+            <input formControlName="companyName" placeholder="Ex: Alpha Ventures"/>
+          </div>
+
+          <div class="field">
+            <label>Website <span class="hint">Optional</span></label>
+            <input formControlName="website" placeholder="https://alpha.vc"/>
+          </div>
+
+          <div class="field">
+            <label>Location <span class="hint">City, Country</span></label>
+            <input formControlName="location" placeholder="Paris, France"/>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="role==='STARTUP'">
+          <div class="field">
+            <label>Company Name</label>
+            <input formControlName="companyName" placeholder="Ex: NovaTech"/>
+          </div>
+
+          <div class="grid">
+            <div class="field">
+              <label>Website <span class="hint">Optional</span></label>
+              <input formControlName="website" placeholder="https://novatech.io"/>
+            </div>
+            <div class="field">
+              <label>Country</label>
+              <input formControlName="country" placeholder="Morocco"/>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Team size <span class="hint">Optional</span></label>
+            <input type="number" formControlName="teamSize" placeholder="e.g. 8"/>
+          </div>
+        </ng-container>
+      </ng-container>
+
+      <ng-container *ngIf="currentStep===2">
+        <ng-container *ngIf="role==='INVESTOR'">
+          <div class="field">
+            <label>Investment range <span class="hint">Optional</span></label>
+            <input formControlName="investmentRange" placeholder="$10k – $1M"/>
+          </div>
+
+          <div class="field">
+            <label>Industries</label>
+            <div class="dd" (click)="$event.stopPropagation()">
+              <button type="button" class="dd-trigger" (click)="toggleDd('industries')">
+                <div class="chips" *ngIf="industriesVal.length; else placeholderInd">
+                  <span class="chip" *ngFor="let i of industriesVal"
+                        (click)="removeChip('industries', i); $event.stopPropagation()">
+                    {{ i }} ✕
+                  </span>
+                </div>
+                <ng-template #placeholderInd><span class="placeholder">Select industries</span></ng-template>
+                <span class="caret">▾</span>
+              </button>
+              <div class="dd-menu" *ngIf="ddOpen['industries']">
+                <button type="button" class="dd-item" *ngFor="let i of industries"
+                        (click)="toggleOptionArr('industries', i)">
+                  <input type="checkbox" [checked]="isSelectedArr('industries', i)" /> {{ i }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Stage preference</label>
+            <div class="dd" (click)="$event.stopPropagation()">
+              <button type="button" class="dd-trigger" (click)="toggleDd('stagePreference')">
+                <div class="chips" *ngIf="stagePrefVal.length; else placeholderStage">
+                  <span class="chip" *ngFor="let s of stagePrefVal"
+                        (click)="removeChip('stagePreference', s); $event.stopPropagation()">
+                    {{ s }} ✕
+                  </span>
+                </div>
+                <ng-template #placeholderStage><span class="placeholder">Select stages</span></ng-template>
+                <span class="caret">▾</span>
+              </button>
+              <div class="dd-menu" *ngIf="ddOpen['stagePreference']">
+                <button type="button" class="dd-item" *ngFor="let s of stages"
+                        (click)="toggleOptionArr('stagePreference', s)">
+                  <input type="checkbox" [checked]="isSelectedArr('stagePreference', s)" /> {{ s }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="role==='STARTUP'">
+          <div class="field">
+            <label>Description</label>
+            <textarea formControlName="description" rows="3" placeholder="What are you building?"></textarea>
+          </div>
+
+          <div class="grid">
+            <div class="field">
+              <label>Industry</label>
+              <div class="dd" (click)="$event.stopPropagation()">
+                <button type="button" class="dd-trigger" (click)="toggleDd('industry')">
+                  <span>{{ industryVal || 'Select industry' }}</span>
+                  <span class="caret">▾</span>
+                </button>
+                <div class="dd-menu" *ngIf="ddOpen['industry']">
+                  <button type="button" class="dd-item" *ngFor="let i of industries"
+                          (click)="setSingle('industry', i)">{{ i }}</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="field">
+              <label>Stage</label>
+              <div class="dd" (click)="$event.stopPropagation()">
+                <button type="button" class="dd-trigger" (click)="toggleDd('stage')">
+                  <span>{{ stageVal || 'Select stage' }}</span>
+                  <span class="caret">▾</span>
+                </button>
+                <div class="dd-menu" *ngIf="ddOpen['stage']">
+                  <button type="button" class="dd-item" *ngFor="let s of stages"
+                          (click)="setSingle('stage', s)">{{ s }}</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Funding needed <span class="hint">Optional — USD</span></label>
+            <input type="number" formControlName="fundingNeeded" placeholder="50000"/>
+          </div>
+        </ng-container>
+      </ng-container>
+
+      <ng-container *ngIf="currentStep===3">
+        <ng-container *ngIf="role==='INVESTOR'">
+          <div class="field">
+            <label>Bio</label>
+            <textarea formControlName="bio" rows="3"
+                      placeholder="Tell startups about yourself, your thesis, tickets…"></textarea>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="role==='STARTUP'">
+          <div class="grid">
+            <div class="field">
+              <label>Traction <span class="hint">Optional</span></label>
+              <input formControlName="traction" placeholder="e.g. 200 beta users, 5 pilots"/>
+            </div>
+            <div class="field">
+              <label>Pitch deck URL <span class="hint">Optional</span></label>
+              <input formControlName="pitchDeckUrl" placeholder="https://.../deck.pdf"/>
+            </div>
+          </div>
+        </ng-container>
+
+        <button class="btn primary block lg" type="button" (click)="submit()">Finish & Publish</button>
+      </ng-container>
+
+      <div class="nav">
+        <button class="btn muted" type="button" (click)="prevStep()" [disabled]="currentStep===1">Back</button>
+        <button class="btn primary" type="button" *ngIf="currentStep<totalSteps" (click)="nextStep()">Next</button>
+      </div>
+    </form>
+  </div>
+</div>

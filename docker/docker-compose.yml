@@ -6,9 +6,11 @@ services:
     restart: unless-stopped
     env_file: .env.db
     ports:
-      - "${DB_PORT}:5432"
+      - "5433:5432"
     volumes:
       - investor_db_data:/var/lib/postgresql/data
+    networks:
+      - investor_net
 
   pgadmin:
     image: dpage/pgadmin4:8
@@ -16,9 +18,14 @@ services:
     restart: unless-stopped
     env_file: .env.db
     ports:
-      - "${PGADMIN_PORT}:80"
+      - "8081:80"
     depends_on:
       - db
+    networks:
+      - investor_net
+
+networks:
+  investor_net:
 
 volumes:
   investor_db_data:

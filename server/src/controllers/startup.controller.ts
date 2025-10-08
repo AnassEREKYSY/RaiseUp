@@ -13,8 +13,8 @@ export class StartupController {
   }
 
   async create(req: Request, res: Response) {
-    const userId = req.body.userId;
-    res.status(201).json(await service.create(userId, req.body));
+    const created = await service.create(req.body.userId, req.body);
+    res.status(201).json({ ...created, hasProfile: true });
   }
 
   async update(req: Request, res: Response) {

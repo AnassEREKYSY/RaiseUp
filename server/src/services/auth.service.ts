@@ -20,11 +20,18 @@ export class AuthService {
       }
     });
 
-    return { message: 'User registered successfully', user };
+    const { password, ...safe } = user as any;
+    return { message: 'User registered successfully', user: { ...safe, hasProfile: false } };
   }
 
   async login(data: LoginDto) {
-    const user = await prisma.user.findUnique({ where: { email: data.email } });
+    const user = await prisma.user.findUnique({
+      where: { email: data.email },
+      include: {
+        investorProfile: { select: { id: true } },
+        startupProfile: { select: { id: true } }
+      }
+    });
     if (!user) throw new Error('Invalid credentials');
 
     const valid = await bcrypt.compare(data.password, user.password);
@@ -36,6 +43,12 @@ export class AuthService {
       { expiresIn: '7d' }
     );
 
-    return { token, user };
+    const hasProfile = !!(user.investorProfile || user.startupProfile);
+    const { password, investorProfile, startupProfile, ...safe } = user as any;
+
+    return {
+      token,
+      user: { ...safe, hasProfile }
+    };
   }
 }

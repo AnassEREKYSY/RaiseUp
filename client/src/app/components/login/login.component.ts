@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, Validators, Form, FormGroup } from '@angular/forms';
+import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
 
@@ -15,8 +15,7 @@ export class LoginComponent implements OnInit {
   loading = false;
   errorMsg = '';
   showPassword = false;
-
-  form!:FormGroup;
+  form!: FormGroup;
 
   constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {}
 
@@ -38,7 +37,15 @@ export class LoginComponent implements OnInit {
     this.errorMsg = '';
 
     this.auth.login(this.form.value).subscribe({
-      next: () => this.router.navigate(['/']),
+      next: (res) => {
+        this.loading = false;
+        const user = res.user;
+        if (!user.hasProfile) {
+          this.router.navigate(['/onboarding']);
+        } else {
+          this.router.navigate(['/dashboard']);
+        }
+      },
       error: (err) => {
         this.errorMsg = err.error?.error || 'Invalid credentials';
         this.loading = false;
