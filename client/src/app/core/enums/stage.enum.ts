@@ -3,5 +3,6 @@ export enum Stage {
   MVP = 'MVP',
   GROWTH = 'GROWTH',
   SCALE = 'SCALE',
-  EXIT = 'EXIT'
+  EXIT = 'EXIT',
+  SEED = "SEED"
 }

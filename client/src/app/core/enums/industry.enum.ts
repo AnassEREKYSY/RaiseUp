@@ -8,5 +8,6 @@ export enum Industry {
   GREEN_TECH = 'GREEN_TECH',
   LOGISTICS = 'LOGISTICS',
   AGRITECH = 'AGRITECH',
-  OTHER = 'OTHER'
+  OTHER = 'OTHER',
+  TECHNOLOGY = "TECHNOLOGY"
 }

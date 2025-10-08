@@ -1,0 +1,20 @@
+<div class="card">
+  <div class="image-container">
+    <img [src]="user.avatarUrl || 'assets/default-investor.jpg'" alt="Investor Logo" />
+    <button class="heart-btn" (click)="toggleLike()">
+      <mat-icon>{{ liked ? 'favorite' : 'favorite_border' }}</mat-icon>
+    </button>
+  </div>
+
+  <div class="card-content">
+    <h3>{{ profile.companyName || user.fullName }}</h3>
+
+    <p class="industries" title="{{ profile.industries.join(', ') }}">
+      {{ profile.industries.join(', ') }}
+    </p>
+
+    <p class="stage" title="{{ profile.stagePreference.join(', ') }}">
+      {{ profile.stagePreference.join(', ') }}
+    </p>
+  </div>
+</div>

@@ -1,0 +1,11 @@
+<div class="card-list" *ngIf="!loading; else loadingTpl">
+  <app-startup-card
+    *ngFor="let s of startups"
+    [user]="s.user"
+    [profile]="s.profile">
+  </app-startup-card>
+</div>
+
+<ng-template #loadingTpl>
+  <p class="loading">Loading startups...</p>
+</ng-template>

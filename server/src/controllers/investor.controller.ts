@@ -14,8 +14,18 @@ export class InvestorController {
     }
 
     async create(req: Request, res: Response) {
-    const created = await service.create(req.body.userId, req.body);
-    res.status(201).json({ ...created, hasProfile: true });
+        try {
+        const user = (req as any).user;
+        if (!user || !user.id) {
+            return res.status(400).json({ error: 'Invalid or missing user in token.' });
+        }
+
+        const created = await service.create(user.id, req.body);
+        return res.status(201).json({ ...created, hasProfile: true });
+        } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: 'Server error creating investor profile.' });
+        }
     }
 
     async update(req: Request, res: Response) {

@@ -1,0 +1,17 @@
+<div class="card">
+  <div class="image-container">
+    <img [src]="user.avatarUrl || 'assets/default-startup.jpg'" alt="Startup Logo" />
+    <button class="heart-btn" (click)="toggleLike()">
+      <mat-icon>{{ liked ? 'favorite' : 'favorite_border' }}</mat-icon>
+    </button>
+  </div>
+
+  <div class="card-content">
+    <h3>{{ profile.companyName }}</h3>
+
+    <div class="info-row">
+      <span class="stage">{{ profile.stage }}</span>
+      <span class="funding" *ngIf="profile.fundingNeeded">{{ profile.fundingNeeded | number }} $</span>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,7 @@
+<div class="card-list">
+  <app-investor-card
+    *ngFor="let i of investors"
+    [user]="i.user"
+    [profile]="i.profile">
+  </app-investor-card>
+</div>

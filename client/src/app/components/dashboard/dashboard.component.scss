@@ -1,0 +1,12 @@
+.dashboard-container {
+  padding: 30px;
+  min-height: calc(100vh - 80px);
+  background: var(--bg);
+
+  .empty-state {
+    text-align: center;
+    color: var(--muted);
+    font-size: 18px;
+    padding-top: 80px;
+  }
+}

@@ -1,1 +1,9 @@
-<p>dashboard works!</p>
+<div class="dashboard-container">
+  <ng-container [ngSwitch]="role">
+    <app-startup-list *ngSwitchCase="Role.INVESTOR"></app-startup-list>
+    <app-investor-list *ngSwitchCase="Role.STARTUP"></app-investor-list>
+    <div *ngSwitchDefault class="empty-state">
+      <p>No profile detected. Please complete onboarding.</p>
+    </div>
+  </ng-container>
+</div>
