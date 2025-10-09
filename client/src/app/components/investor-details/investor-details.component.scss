@@ -6,6 +6,7 @@
 }
 
 .details-card {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   background: var(--card);
@@ -16,6 +17,39 @@
   width: 100%;
   transition: all 0.3s ease;
 
+  .back-btn,
+  .message-btn {
+    position: absolute;
+    top: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    z-index: 10;
+
+    mat-icon {
+      color: var(--primary);
+      font-size: 22px;
+    }
+
+    &:hover {
+      background: var(--primary);
+      mat-icon {
+        color: white;
+      }
+    }
+  }
+
+  .back-btn {
+    left: 20px;
+  }
+
+  .message-btn {
+    right: 20px;
+  }
 }
 
 .image-section {
@@ -42,7 +76,6 @@
   }
 }
 
-/* ---------- RIGHT SIDE ---------- */
 .info-section {
   flex: 1.8;
   padding: 50px 60px;

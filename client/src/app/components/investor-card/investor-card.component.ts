@@ -26,4 +26,10 @@ export class InvestorCardComponent {
   openDetails() {
     this.router.navigate(['/investors', this.profile.id]);
   }
+
+  openChat() {
+    this.router.navigate(['/messages'], {
+      queryParams: { userId: this.user.id }
+    });
+  }
 }

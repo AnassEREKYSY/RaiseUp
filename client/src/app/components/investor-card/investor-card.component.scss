@@ -15,7 +15,7 @@
 
   .image-container {
     position: relative;
-    height: 65%;
+    height: 70%;
     width: 100%;
     background: #f3f4f6;
 
@@ -26,10 +26,10 @@
       display: block;
     }
 
-    .heart-btn {
+    .heart-btn,
+    .message-btn {
       position: absolute;
       top: 10px;
-      right: 10px;
       background: rgba(255, 255, 255, 0.9);
       border: none;
       border-radius: 50%;
@@ -49,10 +49,18 @@
         }
       }
     }
+
+    .heart-btn {
+      right: 10px;
+    }
+
+    .message-btn {
+      left: 10px;
+    }
   }
 
   .card-content {
-    height: 35%;
+    height: 30%;
     padding: 14px 16px;
     display: flex;
     flex-direction: column;

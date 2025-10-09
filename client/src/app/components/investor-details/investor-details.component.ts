@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { InvestorsService } from '../../services/investors.service';
 import { InvestorProfile } from '../../core/models/investor.model';
@@ -20,7 +20,8 @@ export class InvestorDetailsComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private investorsService: InvestorsService
+    private investorsService: InvestorsService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -35,5 +36,15 @@ export class InvestorDetailsComponent implements OnInit {
         error: (err) => console.error(err)
       });
     }
+  }
+
+  openChat() {
+    this.router.navigate(['/messages'], {
+      queryParams: { userId: this.user.id }
+    });
+  }
+
+  goBack() {
+    this.router.navigate(['/dashboard']);
   }
 }

@@ -26,4 +26,11 @@ export class StartupCardComponent {
   openDetails() {
     this.router.navigate(['/startups', this.profile.id]);
   }
+
+  openChat() {
+    this.router.navigate(['/messages'], {
+      queryParams: { userId: this.user.id }
+    });
+  }
+
 }

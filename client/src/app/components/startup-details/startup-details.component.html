@@ -1,5 +1,14 @@
 <div class="details-wrapper" *ngIf="!loading; else loader">
   <div class="details-card">
+
+    <button class="back-btn" (click)="goBack()" aria-label="Back">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+
+    <button class="message-btn" (click)="openChat()" aria-label="Message">
+      <mat-icon>chat_bubble_outline</mat-icon>
+    </button>
+
     <div class="image-section">
       <img
         [src]="user?.avatarUrl || 'assets/default-startup.jpg'"

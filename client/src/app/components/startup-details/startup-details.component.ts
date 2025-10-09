@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { StartupsService } from '../../services/startups.service';
 import { MatIconModule } from '@angular/material/icon';
 import { StartupProfile } from '../../core/models/startup.model';
@@ -20,7 +20,8 @@ export class StartupDetailsComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private startupsService: StartupsService
+    private startupsService: StartupsService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -35,5 +36,15 @@ export class StartupDetailsComponent implements OnInit {
         error: (err) => console.error(err)
       });
     }
+  }
+
+  openChat() {
+    this.router.navigate(['/messages'], {
+      queryParams: { userId: this.user.id }
+    });
+  }
+
+  goBack() {
+    this.router.navigate(['/dashboard']);
   }
 }

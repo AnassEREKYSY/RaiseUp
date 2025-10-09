@@ -4,6 +4,11 @@
       [src]="user.avatarUrl || 'assets/default-startup.jpg'"
       alt="Startup Logo"
     />
+
+    <button class="message-btn" (click)="openChat(); $event.stopPropagation()">
+      <mat-icon>chat_bubble_outline</mat-icon>
+    </button>
+
     <button class="heart-btn" (click)="toggleLike(); $event.stopPropagation()">
       <mat-icon>{{ liked ? 'favorite' : 'favorite_border' }}</mat-icon>
     </button>
@@ -11,12 +16,9 @@
 
   <div class="card-content">
     <h3>{{ profile.companyName }}</h3>
-
     <div class="info-row">
       <span class="stage">{{ profile.stage }}</span>
-      <span class="funding" *ngIf="profile.fundingNeeded">
-        💰 {{ profile.fundingNeeded | number }} USD
-      </span>
+      <span class="funding" *ngIf="profile.fundingNeeded">{{ profile.fundingNeeded | number }} $</span>
     </div>
   </div>
 </div>
