@@ -70,6 +70,33 @@
           <mat-icon>picture_as_pdf</mat-icon> View Pitch Deck
         </a>
       </div>
+
+      <!-- PROJECTS SECTION -->
+      <div class="section" *ngIf="startup.projects?.length">
+        <h3>Projects</h3>
+        <div class="projects-grid">
+          <div class="project-card" *ngFor="let project of startup.projects">
+            <div class="project-header">
+              <h4>{{ project.title }}</h4>
+              <span class="industry-tag">{{ project.industry }}</span>
+            </div>
+
+            <p class="description">{{ project.description }}</p>
+
+            <div class="project-meta">
+              <div *ngIf="project.fundingGoal">
+                <mat-icon>paid</mat-icon>
+                <span>{{ project.fundingGoal | number }} USD</span>
+              </div>
+              <div>
+                <mat-icon>calendar_today</mat-icon>
+                <span>{{ project.createdAt | date: 'mediumDate' }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>

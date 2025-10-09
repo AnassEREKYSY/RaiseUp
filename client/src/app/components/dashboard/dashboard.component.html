@@ -1,4 +1,11 @@
 <div class="dashboard-container">
+  <div class="dashboard-header" *ngIf="role === Role.STARTUP">
+    <button class="create-btn" (click)="showModal = true">
+      <mat-icon>add</mat-icon>
+      Create Project
+    </button>
+  </div>
+
   <ng-container [ngSwitch]="role">
     <app-startup-list *ngSwitchCase="Role.INVESTOR"></app-startup-list>
     <app-investor-list *ngSwitchCase="Role.STARTUP"></app-investor-list>
@@ -6,4 +13,10 @@
       <p>No profile detected. Please complete onboarding.</p>
     </div>
   </ng-container>
+
+  <app-project-modal
+    *ngIf="showModal"
+    (close)="showModal = false"
+    (created)="onProjectCreated()"
+  ></app-project-modal>
 </div>

@@ -3,7 +3,6 @@
   justify-content: center;
   padding: 20px 0px;
   background: var(--bg);
-  position: relative;
 }
 
 .details-card {
@@ -17,40 +16,40 @@
   max-width: 1200px;
   width: 100%;
   transition: all 0.3s ease;
-}
 
-.back-btn,
-.message-btn {
-  position: fixed;
-  top: 100px;
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  border-radius: 50%;
-  padding: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  z-index: 1000;
+  .back-btn,
+  .message-btn {
+    position: absolute;
+    top: 20px;
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 50%;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    z-index: 10;
 
-  mat-icon {
-    color: var(--primary);
-    font-size: 22px;
-  }
-
-  &:hover {
-    background: var(--primary);
     mat-icon {
-      color: white;
+      color: var(--primary);
+      font-size: 22px;
+    }
+
+    &:hover {
+      background: var(--primary);
+      mat-icon {
+        color: white;
+      }
     }
   }
-}
 
-.back-btn {
-  left: 40px;
-}
+  .back-btn {
+    left: 20px;
+  }
 
-.message-btn {
-  right: 40px;
+  .message-btn {
+    right: 20px;
+  }
 }
 
 .image-section {
@@ -87,14 +86,13 @@
     font-size: 2rem;
     font-weight: 700;
     color: var(--text);
-    margin: 0 0 10px;
+    margin: 0;
   }
 
   .tags-container {
     display: flex;
-    flex-wrap: wrap;
     gap: 10px;
-    margin-bottom: 24px;
+    margin: 12px 0 24px;
 
     .tag {
       background: #eef1ff;
@@ -103,11 +101,11 @@
       border-radius: 14px;
       font-size: 13px;
       font-weight: 500;
-    }
 
-    .stage-tag {
-      background: #ede9fe;
-      color: #4f46e5;
+      &.stage-tag {
+        background: #f5eaff;
+        color: #7c3aed;
+      }
     }
   }
 
@@ -166,9 +164,9 @@
     .pitch-link {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       color: var(--primary);
-      font-weight: 600;
+      font-weight: 500;
       text-decoration: none;
 
       mat-icon {
@@ -177,6 +175,94 @@
 
       &:hover {
         text-decoration: underline;
+      }
+    }
+  }
+
+  /* PROJECTS GRID */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 👈 4 per line */
+    gap: 20px;
+    margin-top: 20px;
+
+    @media (max-width: 1200px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    @media (max-width: 900px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (max-width: 600px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .project-card {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    padding: 20px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+    &:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+
+      h4 {
+        font-size: 1.05rem;
+        font-weight: 700;
+        color: var(--text);
+        margin: 0;
+      }
+
+      .industry-tag {
+        background: #eef1ff;
+        color: var(--primary);
+        font-size: 12px;
+        font-weight: 600;
+        padding: 4px 8px;
+        border-radius: 10px;
+        text-transform: capitalize;
+      }
+    }
+
+    .description {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 12px;
+      line-height: 1.5;
+      flex-grow: 1;
+    }
+
+    .project-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      font-size: 13px;
+      color: var(--text);
+      margin-top: auto;
+
+      mat-icon {
+        font-size: 16px;
+        color: var(--primary);
+        vertical-align: middle;
+      }
+
+      span {
+        vertical-align: middle;
       }
     }
   }

@@ -1,0 +1,122 @@
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(3px);
+  z-index: 1000;
+}
+
+.modal-card {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--card);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  padding: 40px;
+  width: 100%;
+  max-width: 520px;
+  z-index: 1001;
+  animation: fadeIn 0.3s ease;
+
+  h2 {
+    margin-bottom: 24px;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: none;
+    border: none;
+    cursor: pointer;
+
+    mat-icon {
+      color: var(--muted);
+      font-size: 22px;
+    }
+
+    &:hover mat-icon {
+      color: var(--primary);
+    }
+  }
+
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+
+      label {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 6px;
+      }
+
+      input,
+      textarea,
+      select {
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 14px;
+        color: var(--text);
+        background: var(--bg);
+        transition: border 0.2s ease;
+
+        &:focus {
+          outline: none;
+          border-color: var(--primary);
+        }
+      }
+    }
+
+    .submit-btn {
+      margin-top: 8px;
+      background: var(--primary);
+      color: white;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 16px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: background 0.2s ease;
+
+      &:hover {
+        background: var(--primary-600);
+      }
+
+      mat-icon {
+        font-size: 18px;
+      }
+
+      &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+      }
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}

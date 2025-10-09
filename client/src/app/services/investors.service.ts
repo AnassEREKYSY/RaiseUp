@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment.development';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { InvestorProfile } from '../core/models/investor.model';
-import { User } from '../core/models/user.model';
 import { AuthService } from './auth.service';
 
 @Injectable({ providedIn: 'root' })

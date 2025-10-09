@@ -1,5 +1,6 @@
 import { Industry } from "../enums/industry.enum";
 import { Stage } from "../enums/stage.enum";
+import { Project } from "./project.model";
 
 export interface StartupProfile {
   id: string;
@@ -14,5 +15,6 @@ export interface StartupProfile {
   country?: string;
   traction?: string;
   pitchDeckUrl?: string;
+  projects?: Project[]; 
   createdAt: Date;
 }

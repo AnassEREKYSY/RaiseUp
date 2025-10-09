@@ -10,6 +10,10 @@ export class ProjectService {
     return prisma.project.findUnique({ where: { id }, include: { startup: true, matches: true } });
   }
 
+  async findStartupByUserId(userId: string) {
+    return prisma.startupProfile.findUnique({ where: { userId } });
+  }
+
   async create(startupId: string, data: CreateProjectDto) {
     return prisma.project.create({
       data: { ...data, startupId }

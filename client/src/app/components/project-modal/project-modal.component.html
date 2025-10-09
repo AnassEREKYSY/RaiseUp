@@ -1,0 +1,39 @@
+<div class="modal-overlay" (click)="closeModal()"></div>
+
+<div class="modal-card">
+  <button class="close-btn" (click)="closeModal()" aria-label="Close">
+    <mat-icon>close</mat-icon>
+  </button>
+
+  <h2>Create New Project</h2>
+
+  <form [formGroup]="form" (ngSubmit)="submit()" class="form">
+    <div class="form-group">
+      <label>Title</label>
+      <input type="text" formControlName="title" placeholder="Project title" />
+    </div>
+
+    <div class="form-group">
+      <label>Description</label>
+      <textarea formControlName="description" rows="3" placeholder="Brief project description"></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Funding Goal (USD)</label>
+      <input type="number" formControlName="fundingGoal" placeholder="Optional" />
+    </div>
+
+    <div class="form-group">
+      <label>Industry</label>
+      <select formControlName="industry">
+        <option value="">Select industry</option>
+        <option *ngFor="let industry of industries" [value]="industry">{{ industry }}</option>
+      </select>
+    </div>
+
+    <button class="submit-btn" type="submit" [disabled]="form.invalid">
+      <mat-icon>add_circle</mat-icon>
+      Create Project
+    </button>
+  </form>
+</div>

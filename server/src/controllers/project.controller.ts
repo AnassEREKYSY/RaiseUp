@@ -13,8 +13,23 @@ export class ProjectController {
   }
 
   async create(req: Request, res: Response) {
-    const startupId = req.body.startupId;
-    res.status(201).json(await service.create(startupId, req.body));
+    try {
+      const user = (req as any).user;
+      if (!user || !user.id) {
+        return res.status(400).json({ error: 'Invalid or missing user in token.' });
+      }
+
+      const startupProfile = await service.findStartupByUserId(user.id);
+      if (!startupProfile) {
+        return res.status(404).json({ error: 'Startup profile not found.' });
+      }
+
+      const created = await service.create(startupProfile.id, req.body);
+      return res.status(201).json(created);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: 'Error creating project.' });
+    }
   }
 
   async update(req: Request, res: Response) {
