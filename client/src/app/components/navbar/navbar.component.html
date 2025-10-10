@@ -30,10 +30,19 @@
     </button>
 
     <button type="button" class="avatar" (click)="goProfile()" aria-label="Profile">
-      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-        <path fill="currentColor"
-              d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.42 0-8 2.13-8 4.75V21h16v-2.25C20 16.13 16.42 14 12 14Z"/>
-      </svg>
+      <img
+        *ngIf="user?.avatarUrl; else defaultAvatar"
+        [src]="user.avatarUrl"
+        alt="Avatar"
+      />
+      <ng-template #defaultAvatar>
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path
+            fill="currentColor"
+            d="M12 12a5 5 0 1 0-5-5 5 5 0 0 0 5 5Zm0 2c-4.42 0-8 2.13-8 4.75V21h16v-2.25C20 16.13 16.42 14 12 14Z"
+          />
+        </svg>
+      </ng-template>
     </button>
 
     <button type="button" class="icon-btn ghost" (click)="logout()" aria-label="Logout">

@@ -1,0 +1,185 @@
+<div class="profile-wrap" *ngIf="!loading; else loader">
+
+
+  <div class="header-grid">
+    <button class="back-btn" (click)="goBack()" aria-label="Back to dashboard">
+      <mat-icon>arrow_back</mat-icon>
+    </button>
+
+    <section class="card avatar-card">
+      <div class="avatar-ring">
+        <img
+          [src]="previewUrl || user?.avatarUrl || 'assets/default-user.jpg'"
+          alt="Profile"
+          class="avatar"
+        />
+        <label *ngIf="editMode" class="camera" aria-label="Upload avatar">
+          <input type="file" accept="image/*" (change)="onFileSelected($event)" />
+          <mat-icon>photo_camera</mat-icon>
+        </label>
+      </div>
+
+      <div class="identity">
+        <div class="name">
+          {{
+            role === 'STARTUP'
+              ? startupProfile?.companyName
+              : (investorProfile?.companyName || user.fullName)
+          }}
+        </div>
+        <div class="role-chip">{{ role }}</div>
+
+        <div class="quick-chips" *ngIf="role === 'STARTUP'">
+          <span class="chip" *ngIf="startupProfile?.industry">{{ startupProfile?.industry }}</span>
+          <span class="chip tone" *ngIf="startupProfile?.stage">{{ startupProfile?.stage }}</span>
+        </div>
+
+        <div class="quick-chips" *ngIf="role === 'INVESTOR'">
+          <span class="chip" *ngIf="investorProfile?.investmentRange">{{ investorProfile?.investmentRange }}</span>
+          <span class="chip" *ngFor="let ind of investorProfile?.industries | slice:0:2">{{ ind }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card info-card pro">
+      <button class="edit-fab" (click)="toggleEdit()" aria-label="Edit">
+        <mat-icon>{{ editMode ? 'close' : 'edit' }}</mat-icon>
+      </button>
+
+      <div class="info-head">
+        <div class="title">
+          <h3>Bio & other details</h3>
+        </div>
+        <div class="subtle">Keep your profile up to date</div>
+      </div>
+
+      <div *ngIf="!editMode" class="info-body">
+        <div class="kv-grid">
+          <div class="kv">
+            <div class="k">
+              <mat-icon>language</mat-icon>
+              Website
+            </div>
+            <div class="v">
+              <ng-container *ngIf="investorProfile?.website || startupProfile?.website; else dash">
+                <a [href]="investorProfile?.website || startupProfile?.website" target="_blank">
+                  {{ investorProfile?.website || startupProfile?.website }}
+                </a>
+              </ng-container>
+            </div>
+          </div>
+
+          <div class="kv" *ngIf="role === 'STARTUP'">
+            <div class="k">
+              <mat-icon>public</mat-icon>
+              Country
+            </div>
+            <div class="v">{{ startupProfile?.country || '—' }}</div>
+          </div>
+
+          <div class="kv" *ngIf="role === 'INVESTOR'">
+            <div class="k">
+              <mat-icon>public</mat-icon>
+              Location
+            </div>
+            <div class="v">{{ investorProfile?.location || '—' }}</div>
+          </div>
+
+          <div class="kv">
+            <div class="k">
+              <mat-icon>calendar_today</mat-icon>
+              Joined
+            </div>
+            <div class="v">
+              {{ (investorProfile?.createdAt || startupProfile?.createdAt) | date }}
+            </div>
+          </div>
+        </div>
+
+        <div class="desc-block" *ngIf="role === 'INVESTOR' ? investorProfile?.bio : startupProfile?.description">
+          <div class="desc-title">
+            <mat-icon>notes</mat-icon>
+            {{ role === 'INVESTOR' ? 'Bio' : 'Description' }}
+          </div>
+          <p class="desc">
+            {{ role === 'INVESTOR' ? investorProfile?.bio : startupProfile?.description }}
+          </p>
+        </div>
+      </div>
+
+      <form *ngIf="editMode" [formGroup]="editForm" (ngSubmit)="saveChanges()" class="info-body">
+        <div class="form-grid">
+          <div class="fg">
+            <label>Company Name</label>
+            <input type="text" formControlName="companyName" />
+          </div>
+
+          <div class="fg">
+            <label>Website</label>
+            <input type="url" formControlName="website" />
+          </div>
+
+          <div class="fg" *ngIf="role === 'STARTUP'">
+            <label>Country</label>
+            <input type="text" formControlName="country" />
+          </div>
+
+          <div class="fg" *ngIf="role === 'INVESTOR'">
+            <label>Location</label>
+            <input type="text" formControlName="location" />
+          </div>
+
+          <div class="fg span-2" *ngIf="role === 'INVESTOR'">
+            <label>Bio</label>
+            <textarea rows="3" formControlName="bio"></textarea>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn ghost" (click)="toggleEdit()">
+            Cancel
+          </button>
+          <button class="btn primary" type="submit" [disabled]="editForm.invalid">
+            <mat-icon>save</mat-icon> Save Changes
+          </button>
+        </div>
+      </form>
+
+      <ng-template #dash>—</ng-template>
+    </section>
+  </div>
+
+  <section *ngIf="role === 'STARTUP' && startupProfile?.projects?.length" class="card projects-card">
+    <div class="list-head">
+      <h3>Projects</h3>
+      <div class="muted">{{ startupProfile?.projects?.length }} total</div>
+    </div>
+
+    <div class="projects-grid">
+      <div class="project-card" *ngFor="let project of startupProfile?.projects">
+        <div class="project-header">
+          <h4>{{ project.title }}</h4>
+          <span class="industry-tag">{{ project.industry }}</span>
+        </div>
+
+        <p class="description">{{ project.description }}</p>
+
+        <div class="project-meta">
+          <div *ngIf="project.fundingGoal">
+            <mat-icon>paid</mat-icon>
+            <span>{{ project.fundingGoal | number }} USD</span>
+          </div>
+          <div>
+            <mat-icon>calendar_today</mat-icon>
+            <span>{{ project.createdAt | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<ng-template #loader>
+  <div class="loader">Loading profile…</div>
+</ng-template>

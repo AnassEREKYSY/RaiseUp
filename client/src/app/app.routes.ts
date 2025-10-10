@@ -5,6 +5,7 @@ import { OnboardingComponent } from './components/onboarding/onboarding.componen
 import { MainLayoutComponent } from './components/main-layout/main-layout.component';
 import { DashboardComponent } from './components/dashboard/dashboard.component';
 import { onboardingGuard } from './guards/onboarding.guard';
+import { ProfileComponent } from './components/profile/profile.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -34,6 +35,10 @@ export const routes: Routes = [
           import('./components/investor-details/investor-details.component').then(
             (m) => m.InvestorDetailsComponent
           )
+      },
+      {
+        path: 'profile',
+        component: ProfileComponent
       }
     ]
   },

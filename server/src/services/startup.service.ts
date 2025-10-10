@@ -18,9 +18,12 @@ export class StartupService {
   }
 
   async update(id: string, data: UpdateStartupDto) {
-    return prisma.startupProfile.update({ where: { id }, data });
+    return prisma.startupProfile.update({
+      where: { id },
+      data,
+      include: { user: true, projects: true }
+    });
   }
-
   async delete(id: string) {
     return prisma.startupProfile.delete({ where: { id } });
   }

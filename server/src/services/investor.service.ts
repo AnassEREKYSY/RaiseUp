@@ -18,7 +18,11 @@ export class InvestorService {
   }
 
   async update(id: string, data: UpdateInvestorDto) {
-    return prisma.investorProfile.update({ where: { id }, data });
+    return prisma.investorProfile.update({
+      where: { id },
+      data,
+      include: { user: true }
+    });
   }
 
   async delete(id: string) {

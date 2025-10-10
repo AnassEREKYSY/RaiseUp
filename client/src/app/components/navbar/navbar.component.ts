@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { AuthService } from '../../services/auth.service';
+import { User } from '../../core/models/user.model';
 
 @Component({
   selector: 'app-navbar',
@@ -15,6 +16,7 @@ export class NavbarComponent {
   @Output() searchSubmit = new EventEmitter<string>();
   form!: FormGroup;
   hasNewNotifications = true;
+  user!: User;
 
   constructor(
     private fb: FormBuilder,
@@ -22,6 +24,7 @@ export class NavbarComponent {
     private router: Router
   ) {
     this.form = this.fb.group({ q: [''] });
+    this.user = this.auth.currentUser;
   }
 
   onSubmit() {

@@ -21,4 +21,9 @@ export class InvestorsService {
   search(params: any): Observable<any[]> {
     return this.http.get<any[]>(`${this.base}/search`, { params });
   }
+
+  update(id: string, data: any): Observable<any> {
+    return this.http.put(`${this.base}/update/${id}`, data);
+  }
+
 }
