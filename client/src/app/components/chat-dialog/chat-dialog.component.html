@@ -1,0 +1,39 @@
+<div class="chat-wrapper">
+  <header class="chat-header">
+    <button class="icon-btn" (click)="ref.close()" aria-label="Back"><mat-icon>arrow_back</mat-icon></button>
+    <div class="meta">
+      <img [ngSrc]="data.targetAvatar || 'assets/default-user.jpg'" width="40" height="40" class="avatar" alt="avatar" />
+      <div>
+        <h4 class="name">{{ data.targetName || 'User' }}</h4>
+        <small class="subtitle">Direct messages</small>
+      </div>
+    </div>
+    <button class="icon-btn ghost" (click)="$event.stopPropagation()" aria-label="Thread">
+      <mat-icon>chat_bubble_outline</mat-icon>
+    </button>
+  </header>
+
+  <div class="messages-scroll">
+    <div *ngIf="loading" class="state muted">Loading messages…</div>
+    <div *ngIf="!loading && errorMsg" class="state error">{{ errorMsg }}</div>
+
+    <div *ngIf="!loading && !errorMsg && messages.length === 0" class="state empty">
+      <mat-icon>chat_bubble_outline</mat-icon>
+      <p>No messages yet. Say hello 👋</p>
+    </div>
+
+    <ng-container *ngIf="!loading && !errorMsg && messages.length > 0">
+      <div *ngFor="let m of messages; trackBy: trackById" class="msg" [class.me]="m.senderId === currentUserId">
+        <div class="bubble">
+          <p class="content">{{ m.content }}</p>
+          <span class="time">{{ m.createdAt ? (m.createdAt | date:'shortTime') : '' }}</span>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+
+  <form class="composer" (ngSubmit)="send()">
+    <input [formControl]="input" placeholder="Write a message…" (keydown.enter)="onEnter($event)" />
+    <button type="submit" [disabled]="input.invalid" aria-label="Send"><mat-icon>send</mat-icon></button>
+  </form>
+</div>

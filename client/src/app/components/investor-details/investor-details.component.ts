@@ -5,6 +5,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { InvestorsService } from '../../services/investors.service';
 import { InvestorProfile } from '../../core/models/investor.model';
 import { User } from '../../core/models/user.model';
+import { MatDialog } from '@angular/material/dialog';
+import { ChatDialogComponent } from '../chat-dialog/chat-dialog.component';
 
 @Component({
   selector: 'app-investor-details',
@@ -21,7 +23,8 @@ export class InvestorDetailsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private investorsService: InvestorsService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit() {
@@ -38,13 +41,21 @@ export class InvestorDetailsComponent implements OnInit {
     }
   }
 
-  openChat() {
-    this.router.navigate(['/messages'], {
-      queryParams: { userId: this.user.id }
-    });
-  }
-
   goBack() {
     this.router.navigate(['/dashboard']);
+  }
+
+  openChat() {
+    this.dialog.open(ChatDialogComponent, {
+      data: {
+        targetUserId: this.user.id,
+        targetName: this.investor?.companyName || this.user.fullName,
+        targetAvatar: this.user.avatarUrl
+      },
+      disableClose: true,
+      autoFocus: false,
+      panelClass: 'chat-dialog-panel',
+      width: '760px'
+    });
   }
 }

@@ -11,7 +11,7 @@
 
     <div class="image-section">
       <img
-        [src]="user?.avatarUrl || 'assets/default-investor.jpg'"
+        [src]="user.avatarUrl || 'assets/default-investor.jpg'"
         alt="Investor Logo"
         class="investor-image"
       />
@@ -19,7 +19,7 @@
 
     <div class="info-section">
       <h1 class="company-name">
-        {{ investor.companyName || user?.fullName }}
+        {{ investor.companyName || user.fullName }}
       </h1>
       <p class="industry-tag">Investor Profile</p>
 

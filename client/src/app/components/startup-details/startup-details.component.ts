@@ -5,6 +5,8 @@ import { StartupsService } from '../../services/startups.service';
 import { MatIconModule } from '@angular/material/icon';
 import { StartupProfile } from '../../core/models/startup.model';
 import { User } from '../../core/models/user.model';
+import { ChatDialogComponent } from '../chat-dialog/chat-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-startup-details',
@@ -21,7 +23,8 @@ export class StartupDetailsComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private startupsService: StartupsService,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit() {
@@ -39,8 +42,16 @@ export class StartupDetailsComponent implements OnInit {
   }
 
   openChat() {
-    this.router.navigate(['/messages'], {
-      queryParams: { userId: this.user.id }
+    this.dialog.open(ChatDialogComponent, {
+      data: {
+        targetUserId: this.user.id,
+        targetName: this.startup?.companyName || this.user.fullName,
+        targetAvatar: this.user.avatarUrl
+      },
+      disableClose: true,
+      autoFocus: false,
+      panelClass: 'chat-dialog-panel',
+      width: '760px'
     });
   }
 

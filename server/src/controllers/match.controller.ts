@@ -24,4 +24,13 @@ export class MatchController {
     await service.delete(req.params.id);
     res.status(204).send();
   }
+
+  async getOrCreate(req: Request, res: Response) {
+    const meId = (req as any).user?.id;
+    const { targetUserId, projectId, investorProfileId } = req.body || {};
+    if (!meId || !targetUserId) return res.status(400).json({ message: 'targetUserId required' });
+
+    const match = await service.getOrCreateForUsers({ meId, targetUserId, projectId, investorProfileId });
+    res.json(match);
+  }
 }
