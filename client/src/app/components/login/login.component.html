@@ -5,29 +5,61 @@
       <p>Login to your account</p>
     </div>
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="error-banner" *ngIf="errorMsg">
+      <i class="material-icons">error_outline</i>
+      <span>{{ errorMsg }}</span>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" [attr.aria-busy]="loading">
       <div class="form-row">
-        <label class="label">Email</label>
-        <input class="input" type="email" formControlName="email" placeholder="john@company.com" />
+        <label class="label" for="email">Email</label>
+        <input
+          id="email"
+          class="input"
+          type="email"
+          formControlName="email"
+          placeholder="john@company.com"
+          [class.invalid]="showError('email')"
+          autocomplete="email"
+          required
+        />
+        <div class="field-error" *ngIf="showError('email')">
+          <ng-container *ngIf="form.get('email')?.errors?.['required']">Email is required.</ng-container>
+          <ng-container *ngIf="form.get('email')?.errors?.['email']">Please enter a valid email address.</ng-container>
+        </div>
       </div>
 
       <div class="form-row">
-        <label class="label">Password</label>
+        <label class="label" for="password">Password</label>
         <div class="password-wrap">
-          <input class="input" [type]="showPassword ? 'text' : 'password'"
-                 formControlName="password" placeholder="••••••••" />
-          <button type="button" class="eye-btn" (click)="togglePassword()">
+          <input
+            id="password"
+            class="input"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="••••••••"
+            [class.invalid]="showError('password')"
+            autocomplete="current-password"
+            required
+          />
+          <button type="button" class="eye-btn" (click)="togglePassword()" aria-label="Toggle password visibility">
             <i class="material-icons">{{ showPassword ? 'visibility_off' : 'visibility' }}</i>
           </button>
+        </div>
+        <div class="field-error" *ngIf="showError('password')">
+          Password is required.
         </div>
       </div>
 
       <div class="row-between">
         <label><input type="checkbox" />&nbsp;Remember me</label>
-        <a class="link" href="#">Forgot Password?</a>
+        <a class="link" routerLink="/forgot-password">Forgot Password?</a>
       </div>
 
-      <button class="btn btn-primary" type="submit" [disabled]="loading">Login</button>
+      <button class="btn btn-primary" type="submit" [disabled]="loading">
+        <span class="spinner" *ngIf="loading" aria-hidden="true"></span>
+        <span>{{ loading ? 'Logging in…' : 'Login' }}</span>
+      </button>
     </form>
 
     <div class="helper">

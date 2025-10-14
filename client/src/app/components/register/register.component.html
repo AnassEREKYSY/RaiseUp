@@ -5,37 +5,91 @@
       <p>Join RaiseUp and connect investors & startups</p>
     </div>
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="error-banner" *ngIf="errorMsg">
+      <i class="material-icons">error_outline</i>
+      <span>{{ errorMsg }}</span>
+    </div>
+
+    <div class="success-banner" *ngIf="successMsg">
+      <i class="material-icons">check_circle</i>
+      <span>{{ successMsg }}</span>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" [attr.aria-busy]="loading">
       <div class="form-row">
-        <label class="label">Role</label>
-        <select class="select" formControlName="role">
+        <label class="label" for="role">Role</label>
+        <select
+          id="role"
+          class="select"
+          formControlName="role"
+          [class.invalid]="showError('role')"
+          required
+        >
           <option value="STARTUP">Startup</option>
           <option value="INVESTOR">Investor</option>
         </select>
+        <div class="field-error" *ngIf="showError('role')">Role is required.</div>
       </div>
 
       <div class="form-row">
-        <label class="label">Full name</label>
-        <input class="input" formControlName="fullName" placeholder="John Doe" />
+        <label class="label" for="fullName">Full name</label>
+        <input
+          id="fullName"
+          class="input"
+          formControlName="fullName"
+          placeholder="John Doe"
+          [class.invalid]="showError('fullName')"
+          autocomplete="name"
+          required
+        />
+        <div class="field-error" *ngIf="showError('fullName')">Full name is required.</div>
       </div>
 
       <div class="form-row">
-        <label class="label">Email</label>
-        <input class="input" type="email" formControlName="email" placeholder="john@company.com" />
-      </div>
-
-      <div class="form-row">
-        <label class="label">Password</label>
-        <div class="password-wrap">
-          <input class="input" [type]="showPassword ? 'text' : 'password'"
-                 formControlName="password" placeholder="••••••••" />
-          <button type="button" class="eye-btn" (click)="togglePassword()">
-            <i class="material-icons">{{ showPassword ? 'visibility_off' : 'visibility' }}</i>
-          </button>
+        <label class="label" for="email">Email</label>
+        <input
+          id="email"
+          class="input"
+          type="email"
+          formControlName="email"
+          placeholder="john@company.com"
+          [class.invalid]="showError('email')"
+          autocomplete="email"
+          required
+        />
+        <div class="field-error" *ngIf="showError('email')">
+          <ng-container *ngIf="form.get('email')?.errors?.['required']">Email is required.</ng-container>
+          <ng-container *ngIf="form.get('email')?.errors?.['email']">Enter a valid email.</ng-container>
         </div>
       </div>
 
-      <button class="btn btn-primary" type="submit" [disabled]="loading">Register</button>
+      <div class="form-row">
+        <label class="label" for="password">Password</label>
+        <div class="password-wrap">
+          <input
+            id="password"
+            class="input"
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="••••••••"
+            [class.invalid]="showError('password')"
+            autocomplete="new-password"
+            required
+          />
+          <button type="button" class="eye-btn" (click)="togglePassword()" aria-label="Toggle password visibility">
+            <i class="material-icons">{{ showPassword ? 'visibility_off' : 'visibility' }}</i>
+          </button>
+        </div>
+        <div class="field-error" *ngIf="showError('password')">
+          <ng-container *ngIf="form.get('password')?.errors?.['required']">Password is required.</ng-container>
+          <ng-container *ngIf="form.get('password')?.errors?.['minlength']">Minimum 8 characters.</ng-container>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" type="submit" [disabled]="loading">
+        <span class="spinner" *ngIf="loading" aria-hidden="true"></span>
+        <span>{{ loading ? 'Registering…' : 'Register' }}</span>
+      </button>
     </form>
 
     <div class="helper">
