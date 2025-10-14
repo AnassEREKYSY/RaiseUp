@@ -1,6 +1,9 @@
 <div class="chat-wrapper">
   <header class="chat-header">
-    <button class="icon-btn" (click)="ref.close()" aria-label="Back"><mat-icon>arrow_back</mat-icon></button>
+    <button class="icon-btn ghost" (click)="ref.close()" aria-label="Close">
+      <mat-icon>close</mat-icon>
+    </button>
+
     <div class="meta">
       <img [ngSrc]="data.targetAvatar || 'assets/default-user.jpg'" width="40" height="40" class="avatar" alt="avatar" />
       <div>
@@ -8,12 +11,11 @@
         <small class="subtitle">Direct messages</small>
       </div>
     </div>
-    <button class="icon-btn ghost" (click)="$event.stopPropagation()" aria-label="Thread">
-      <mat-icon>chat_bubble_outline</mat-icon>
-    </button>
+
+    <span></span>
   </header>
 
-  <div class="messages-scroll">
+  <div class="messages-scroll" #scrollEl>
     <div *ngIf="loading" class="state muted">Loading messages…</div>
     <div *ngIf="!loading && errorMsg" class="state error">{{ errorMsg }}</div>
 
@@ -23,17 +25,27 @@
     </div>
 
     <ng-container *ngIf="!loading && !errorMsg && messages.length > 0">
-      <div *ngFor="let m of messages; trackBy: trackById" class="msg" [class.me]="m.senderId === currentUserId">
+      <div *ngFor="let m of messages; trackBy: trackById" class="msg" [class.me]="isMine(m)">
         <div class="bubble">
           <p class="content">{{ m.content }}</p>
-          <span class="time">{{ m.createdAt ? (m.createdAt | date:'shortTime') : '' }}</span>
+          <div class="meta-row">
+            <span class="time">{{ m.createdAt ? (m.createdAt | date:'shortTime') : '' }}</span>
+            <span *ngIf="isMine(m)" class="status" [class.read]="isRead(m)"><mat-icon>done_all</mat-icon></span>
+          </div>
         </div>
       </div>
     </ng-container>
   </div>
 
-  <form class="composer" (ngSubmit)="send()">
-    <input [formControl]="input" placeholder="Write a message…" (keydown.enter)="onEnter($event)" />
-    <button type="submit" [disabled]="input.invalid" aria-label="Send"><mat-icon>send</mat-icon></button>
-  </form>
+  <div class="composer">
+    <input
+      [formControl]="input"
+      placeholder="Write a message…"
+      (keydown.enter)="onEnter($any($event))"
+      autocomplete="off"
+    />
+    <button type="button" (click)="send()" [disabled]="sendDisabled" aria-label="Send">
+      <mat-icon>send</mat-icon>
+    </button>
+  </div>
 </div>

@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, Inject, OnDestroy, OnInit, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule, NgOptimizedImage, DatePipe } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
@@ -7,15 +7,8 @@ import { Subscription, of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 import { MessagesService } from '../../services/messages.service';
 import { MessageDto } from '../../core/dtos/message.dto';
-
-export interface ChatDialogData {
-  targetUserId: string;
-  targetName: string;
-  targetAvatar?: string;
-  projectId?: string;
-  investorProfileId?: string;
-  matchId?: string;
-}
+import { ChatDialogData } from '../../core/types/chatDialogData.type';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-chat-dialog',
@@ -25,23 +18,29 @@ export interface ChatDialogData {
   styleUrls: ['./chat-dialog.component.scss']
 })
 export class ChatDialogComponent implements OnInit, OnDestroy {
+  @ViewChild('scrollEl') scrollEl!: ElementRef<HTMLElement>;
+
   messages: MessageDto[] = [];
   input = new FormControl('', { nonNullable: true, validators: [Validators.required] });
   loading = true;
+  sending = false;
   errorMsg = '';
   matchId!: string;
   currentUserId = '';
   private sub?: Subscription;
 
+  get sendDisabled() { return this.sending || this.input.value.trim().length === 0; }
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: ChatDialogData,
     public ref: MatDialogRef<ChatDialogComponent>,
     private msgs: MessagesService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private auth: AuthService
   ) {}
 
   ngOnInit() {
-    this.currentUserId = this.getUserId();
+    this.currentUserId = this.auth.currentUser?.id || this.getUserId();
 
     const open$ = this.data.matchId
       ? of({ id: this.data.matchId, messages: [] })
@@ -52,10 +51,9 @@ export class ChatDialogComponent implements OnInit, OnDestroy {
 
     open$
       .pipe(
-        catchError(err => {
+        catchError(() => {
           this.loading = false;
           this.errorMsg = 'Unable to open conversation.';
-          console.error(err);
           return of(null);
         })
       )
@@ -71,10 +69,9 @@ export class ChatDialogComponent implements OnInit, OnDestroy {
 
         this.sub = this.msgs.listByMatch(match.id)
           .pipe(
-            catchError(err => {
+            catchError(() => {
               this.loading = false;
               this.errorMsg = 'Unable to load messages.';
-              console.error(err);
               return of([]);
             }),
             finalize(() => {
@@ -86,13 +83,16 @@ export class ChatDialogComponent implements OnInit, OnDestroy {
           .subscribe(list => {
             this.messages = list;
             this.cdr.detectChanges();
+            this.scrollToBottom();
           });
       });
   }
 
   send() {
-    const content = (this.input.value || '').trim();
-    if (!content || !this.matchId) return;
+    const content = this.input.value.trim();
+    if (!content || !this.matchId || this.sending) return;
+
+    this.sending = true;
 
     const temp: MessageDto = {
       id: 'temp-' + cryptoRandom(),
@@ -109,41 +109,44 @@ export class ChatDialogComponent implements OnInit, OnDestroy {
 
     this.msgs.send(this.matchId, content)
       .pipe(
-        catchError(err => {
-          console.error(err);
+        catchError(() => {
           this.errorMsg = 'Message not sent. Try again.';
-          // remove temp on error
           this.messages = this.messages.filter(m => m.id !== temp.id);
+          this.sending = false;
           this.cdr.detectChanges();
           return of(null);
         })
       )
       .subscribe(sent => {
-        if (!sent) return;
-        // replace temp with server message
-        const idx = this.messages.findIndex(m => m.id === temp.id);
-        if (idx > -1) this.messages[idx] = sent; else this.messages = [...this.messages, sent];
+        if (sent) {
+          const idx = this.messages.findIndex(m => m.id === temp.id);
+          if (idx > -1) this.messages[idx] = sent; else this.messages = [...this.messages, sent];
+        }
+        this.sending = false;
         this.cdr.detectChanges();
         this.scrollToBottom();
-        // refresh from server to guarantee history correctness
-        this.msgs.listByMatch(this.matchId).subscribe(list => {
-          this.messages = list;
-          this.cdr.detectChanges();
-          this.scrollToBottom();
-        });
       });
   }
 
-  onEnter(event: Event) {
+  onEnter(event: KeyboardEvent) {
     event.preventDefault();
     this.send();
   }
 
+  isMine(m: MessageDto) { return m.senderId === this.currentUserId; }
+
   trackById = (_: number, m: MessageDto) => m.id;
 
+  isRead(m: MessageDto): boolean {
+    const anyM = m as any;
+    return Boolean(anyM.isRead || anyM.read || anyM.readAt);
+  }
+
   private scrollToBottom() {
-    const el = document.querySelector('.messages-scroll') as HTMLElement | null;
-    if (el) { el.scrollLeft = 0; el.scrollTop = el.scrollHeight; }
+    const el = this.scrollEl?.nativeElement;
+    if (!el) return;
+    el.scrollLeft = 0;
+    el.scrollTop = el.scrollHeight;
   }
 
   private getUserId(): string {

@@ -18,7 +18,8 @@
   transition: all 0.3s ease;
 
   .back-btn,
-  .message-btn {
+  .message-btn,
+  .heart-btn {
     position: absolute;
     top: 20px;
     background: rgba(255, 255, 255, 0.9);
@@ -37,19 +38,13 @@
 
     &:hover {
       background: var(--primary);
-      mat-icon {
-        color: white;
-      }
+      mat-icon { color: #fff; }
     }
   }
 
-  .back-btn {
-    left: 20px;
-  }
-
-  .message-btn {
-    right: 20px;
-  }
+  .back-btn { left: 20px; }
+  .message-btn { right: 20px; }
+  .heart-btn { right: 70px; }
 }
 
 .image-section {
@@ -70,9 +65,7 @@
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease;
 
-    &:hover {
-      transform: scale(1.03);
-    }
+    &:hover { transform: scale(1.03); }
   }
 }
 
@@ -118,9 +111,7 @@
         text-decoration: none;
         font-weight: 500;
 
-        &:hover {
-          text-decoration: underline;
-        }
+        &:hover { text-decoration: underline; }
       }
     }
   }

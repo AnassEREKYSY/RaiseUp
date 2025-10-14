@@ -1,4 +1,4 @@
-import { Injectable, inject } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
@@ -6,7 +6,7 @@ import { MessageDto } from '../core/dtos/message.dto';
 
 @Injectable({ providedIn: 'root' })
 export class MessagesService {
-  private http = inject(HttpClient);
+  constructor(private http: HttpClient) { }
   private api = 'http://localhost:4000/api';
   private currentMatchId$ = new BehaviorSubject<string | null>(null);
 

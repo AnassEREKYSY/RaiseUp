@@ -1,16 +1,20 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { User } from '../../core/models/user.model';
 import { StartupProfile } from '../../core/models/startup.model';
 import { Router } from '@angular/router';
-import { ChatDialogComponent } from '../chat-dialog/chat-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { ChatDialogComponent } from '../chat-dialog/chat-dialog.component';
+import { MatchesService } from '../../services/match.service';
+import { MatchDto } from '../../core/dtos/match.dto';
+import { SnackMatchComponent } from '../snack-match/snack-match.component';
 
 @Component({
   selector: 'app-startup-card',
   standalone: true,
-  imports: [CommonModule, MatIcon],
+  imports: [CommonModule, MatIcon, MatSnackBarModule],
   templateUrl: './startup-card.component.html',
   styleUrls: ['./startup-card.component.scss']
 })
@@ -18,18 +22,57 @@ export class StartupCardComponent {
   @Input() user!: User;
   @Input() profile!: StartupProfile;
   liked = false;
+  match?: MatchDto;
 
-  constructor(private router: Router,private dialog: MatDialog) {}
+  constructor(
+    private router: Router,
+    private dialog: MatDialog,
+    private matches: MatchesService,
+    private snack: MatSnackBar
+  ) {}
 
   toggleLike() {
-    this.liked = !this.liked;
+    if (this.liked) return;
+    this.matches.request(this.user.id).subscribe({
+      next: (m) => {
+        this.match = m;
+        this.liked = true;
+        if (m.status === 'PENDING') {
+          this.snack.openFromComponent(SnackMatchComponent, {
+            data: { message: 'Match request sent. Waiting for startup to accept.' },
+            duration: 3200,
+            panelClass: ['snack-pending']
+          });
+        } else if (m.status === 'ACCEPTED') {
+          const ref = this.snack.openFromComponent(SnackMatchComponent, {
+            data: { message: 'You are matched. Start chatting now.', action: 'Open chat' },
+            duration: 4000,
+            panelClass: ['snack-success']
+          });
+          ref.onAction().subscribe(() => this.openChat());
+        }
+      },
+      error: () => {
+        this.snack.openFromComponent(SnackMatchComponent, {
+          data: { message: 'Could not send match request.' },
+          duration: 3000,
+          panelClass: ['snack-error']
+        });
+      }
+    });
   }
 
-  openDetails() {
-    this.router.navigate(['/startups', this.profile.id]);
-  }
+  openDetails() { this.router.navigate(['/startups', this.profile.id]); }
 
   openChat() {
+    if (this.match && this.match.status !== 'ACCEPTED') {
+      this.snack.openFromComponent(SnackMatchComponent, {
+        data: { message: 'Match not accepted yet.' },
+        duration: 2200,
+        panelClass: ['snack-error']
+      });
+      return;
+    }
     this.dialog.open(ChatDialogComponent, {
       data: {
         targetUserId: this.user.id,
@@ -42,5 +85,4 @@ export class StartupCardComponent {
       width: '760px'
     });
   }
-
 }

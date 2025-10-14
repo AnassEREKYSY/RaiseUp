@@ -1,0 +1,24 @@
+  <div class="bell" (click)="toggle()" [attr.aria-expanded]="open">
+    <mat-icon>notifications</mat-icon>
+    <span class="dot" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+  </div>
+
+  <div class="panel" *ngIf="open">
+    <div class="header">Notifications</div>
+
+    <div *ngIf="loading" class="state">Loading…</div>
+    <div *ngIf="!loading && items.length === 0" class="state">No notifications</div>
+
+    <div *ngFor="let n of items" class="row">
+      <div class="msg">
+        <div class="type">{{ n.type }}</div>
+        <div class="text">{{ n.message }}</div>
+        <div class="time">{{ n.createdAt | date:'short' }}</div>
+      </div>
+
+      <div class="actions" *ngIf="n.type === 'MATCH_REQUEST' && extractMatchId(n)">
+        <button class="btn" (click)="accept(extractMatchId(n)!)">Accept</button>
+        <button class="btn ghost" (click)="reject(extractMatchId(n)!)">Reject</button>
+      </div>
+    </div>
+  </div>

@@ -20,14 +20,55 @@
   </form>
 
   <div class="actions">
+    <div class="notif-wrap">
+      <button type="button" class="icon-btn ghost" aria-label="Notifications" (click)="openNotifications()">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path fill="currentColor"
+            d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2Zm6-6V11a6 6 0 1 0-12 0v5l-2 2v1h16v-1l-2-2Z"/>
+        </svg>
+        <span class="badge" *ngIf="hasNewNotifications"></span>
+      </button>
 
-    <button type="button" class="icon-btn ghost" aria-label="Notifications" (click)="openNotifications()">
-      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-        <path fill="currentColor"
-          d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2Zm6-6V11a6 6 0 1 0-12 0v5l-2 2v1h16v-1l-2-2Z"/>
-      </svg>
-      <span class="badge" *ngIf="hasNewNotifications"></span>
-    </button>
+      <div class="notif-panel" *ngIf="open">
+        <div class="panel-header">Notifications</div>
+
+        <div class="panel-section">
+          <div class="section-title">Match requests</div>
+          <div *ngIf="pending.length === 0" class="empty">No pending requests</div>
+          <div *ngFor="let m of pending; trackBy: trackById" class="row">
+            <div class="msg">
+              <div class="type">Match request</div>
+              <div class="text">
+                From:
+                <span class="bold">{{ (m.investorId === user?.id) ? 'You → Startup' : 'Investor → You' }}</span>
+              </div>
+              <div class="time">{{ m.createdAt | date:'short' }}</div>
+            </div>
+            <div class="actions">
+              <button class="btn" (click)="accept(m)">Accept</button>
+              <button class="btn ghost" (click)="reject(m)">Reject</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel-section">
+          <div class="section-title">All notifications</div>
+          <div *ngIf="notifications.length === 0" class="empty">No notifications</div>
+          <div *ngFor="let n of notifications; trackBy: trackById" class="row">
+            <div class="msg">
+              <div class="type">{{ n.type }}</div>
+              <div class="text">{{ n.message }}</div>
+              <div class="time">{{ n.createdAt | date:'short' }}</div>
+            </div>
+            <div class="actions">
+              <button class="btn" *ngIf="!n.isRead" (click)="markAsRead(n)">Mark read</button>
+              <button class="btn ghost" (click)="remove(n)">Clear</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- /Panel -->
+    </div>
 
     <button type="button" class="avatar" (click)="goProfile()" aria-label="Profile">
       <img

@@ -15,6 +15,25 @@
 }
 
 .chat-dialog-panel .mat-mdc-dialog-surface{ border-radius:20px; }
+.mat-mdc-snack-bar-container.snack-success .mdc-snackbar__surface{
+  background:#16a34a !important;
+  color:#fff !important;
+  border-radius:14px !important;
+  box-shadow:0 12px 32px rgba(22,163,74,.35) !important;
+}
+.mat-mdc-snack-bar-container.snack-pending .mdc-snackbar__surface{
+  background:#9eac26 !important;
+  color:#fff !important;
+  border-radius:14px !important;
+  box-shadow:0 12px 32px rgba(22,163,74,.35) !important;
+}
+.mat-mdc-snack-bar-container.snack-error .mdc-snackbar__surface{
+  background:#b91c1c !important;
+  color:#fff !important;
+  border-radius:14px !important;
+  box-shadow:0 12px 32px rgba(185,28,28,.35) !important;
+}
+
 *{box-sizing:border-box}
 html,body{
   height:100%;   

@@ -1,4 +1,4 @@
-type GetOrCreateArgs = {
+export type GetOrCreateArgs = {
   meId: string;
   targetUserId: string;
   projectId?: string;

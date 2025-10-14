@@ -33,4 +33,27 @@ export class MatchController {
     const match = await service.getOrCreateForUsers({ meId, targetUserId, projectId, investorProfileId });
     res.json(match);
   }
+
+   async request(req: Request, res: Response) {
+    const meId = (req as any).user?.id;
+    const { targetUserId, projectId, investorProfileId } = req.body || {};
+    if (!meId || !targetUserId) return res.status(400).json({ message: 'targetUserId required' });
+    const match = await service.requestMatch({ meId, targetUserId, projectId, investorProfileId });
+    res.status(201).json(match);
+  }
+
+  async accept(req: Request, res: Response) {
+    const meId = (req as any).user?.id;
+    const { id } = req.params;
+    const match = await service.acceptMatch({ meId, matchId: id });
+    res.json(match);
+  }
+
+  async reject(req: Request, res: Response) {
+    const meId = (req as any).user?.id;
+    const { id } = req.params;
+    await service.rejectMatch({ meId, matchId: id });
+    res.status(204).send();
+  }
+
 }

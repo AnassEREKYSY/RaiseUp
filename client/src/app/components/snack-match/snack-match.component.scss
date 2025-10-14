@@ -1,0 +1,13 @@
+.wrap{
+  display:flex; align-items:center; gap:12px; padding:6px 2px; min-width:320px;
+}
+.icon{ font-size:20px; width:20px; height:20px; opacity:.95; }
+.text{ flex:1; font-weight:600; letter-spacing:.2px; }
+.pill{
+  border:0; cursor:pointer; padding:8px 14px; border-radius:999px;
+  background:linear-gradient(135deg,#22c55e 0%, #16a34a 50%, #0ea5e9 120%);
+  color:#fff; font-weight:700; letter-spacing:.3px;
+  box-shadow:0 8px 18px rgba(14,165,233,.35);
+}
+.pill:hover{ filter:brightness(1.05); }
+.pill:active{ transform:translateY(1px); }

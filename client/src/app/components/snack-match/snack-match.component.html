@@ -1,0 +1,5 @@
+<div class="wrap">
+  <mat-icon class="icon">handshake</mat-icon>
+  <div class="text">{{ data.message }}</div>
+  <button *ngIf="data.action" class="pill" (click)="act()">{{ data.action }}</button>
+</div>
