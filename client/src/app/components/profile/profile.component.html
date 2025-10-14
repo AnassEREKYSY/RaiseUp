@@ -1,7 +1,5 @@
 <div class="profile-wrap" *ngIf="!loading; else loader">
-
-
-  <div class="header-grid">
+  <div class="header-grid" [class.fill]="fillHeader">
     <button class="back-btn" (click)="goBack()" aria-label="Back to dashboard">
       <mat-icon>arrow_back</mat-icon>
     </button>
@@ -178,6 +176,34 @@
     </div>
   </section>
 
+  <section *ngIf="role === 'INVESTOR' && matchedStartups?.length" class="card projects-card">
+    <div class="list-head">
+      <h3>Matched startups</h3>
+      <div class="muted">{{ matchedStartups.length }} total</div>
+    </div>
+
+    <div class="projects-grid">
+      <div class="project-card" *ngFor="let s of matchedStartups">
+        <div class="project-header">
+          <h4>{{ s.companyName }}</h4>
+          <span class="industry-tag" *ngIf="s.industry">{{ s.industry }}</span>
+        </div>
+
+        <p class="description" *ngIf="s.description">{{ s.description }}</p>
+
+        <div class="project-meta">
+          <div *ngIf="s.stage">
+            <mat-icon>flag</mat-icon>
+            <span>{{ s.stage }}</span>
+          </div>
+          <div>
+            <mat-icon>calendar_today</mat-icon>
+            <span>{{ s.createdAt | date:'mediumDate' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
 </div>
 
 <ng-template #loader>

@@ -10,6 +10,7 @@ import { InvestorProfile } from '../../core/models/investor.model';
 import { User } from '../../core/models/user.model';
 import { Role } from '../../core/enums/role.enum';
 import { Router } from '@angular/router';
+import { MatchesService } from '../../services/match.service';
 
 @Component({
   selector: 'app-profile',
@@ -25,6 +26,8 @@ export class ProfileComponent implements OnInit {
   startupProfile?: StartupProfile;
   investorProfile?: InvestorProfile;
 
+  matchedStartups: StartupProfile[] = [];
+
   loading = true;
   editMode = false;
   editForm!: FormGroup;
@@ -35,6 +38,7 @@ export class ProfileComponent implements OnInit {
     private auth: AuthService,
     private startupService: StartupsService,
     private investorService: InvestorsService,
+    private matches: MatchesService,
     private router: Router
   ) {}
 
@@ -50,6 +54,22 @@ export class ProfileComponent implements OnInit {
     } else {
       this.loadByUserId();
     }
+
+    if (this.role === 'INVESTOR') {
+      this.loadInvestorMatches();
+    }
+  }
+
+  get hasStartupProjects() {
+    return this.role === 'STARTUP' && !!this.startupProfile?.projects?.length;
+  }
+
+  get hasInvestorMatches() {
+    return this.role === 'INVESTOR' && !!this.matchedStartups?.length;
+  }
+
+  get fillHeader() {
+    return !(this.hasStartupProjects || this.hasInvestorMatches);
   }
 
   private loadByProfileId(id: string) {
@@ -70,7 +90,7 @@ export class ProfileComponent implements OnInit {
     if (this.role === 'STARTUP') {
       this.startupService.getAll().subscribe({
         next: (list: any) => {
-          const found = (list as any[]).find(s => s.user?.id === this.user.id || s.userId === this.user.id);
+          const found = (list as any[]).find(s => s.userId === this.user.id);
           this.startupProfile = found;
           this.initForm();
           this.loading = false;
@@ -80,7 +100,7 @@ export class ProfileComponent implements OnInit {
     } else {
       this.investorService.getAll().subscribe({
         next: (list: any[]) => {
-          const found = list.find(i => i.user?.id === this.user.id || i.userId === this.user.id);
+          const found = list.find(i => i.userId === this.user.id);
           this.investorProfile = found as InvestorProfile;
           this.initForm();
           this.loading = false;
@@ -88,6 +108,23 @@ export class ProfileComponent implements OnInit {
         error: console.error
       });
     }
+  }
+
+  private loadInvestorMatches() {
+    this.matches.listAll().subscribe({
+      next: (all: any[]) => {
+        const mine = all.filter(m => m.investorId === this.user.id && m.status === 'ACCEPTED');
+        const ids = Array.from(new Set(mine.map(m => m.startupId)));
+        this.startupService.getAll().subscribe({
+          next: (list: any[]) => {
+            const byId = new Map(list.map((s: StartupProfile) => [s.userId, s]));
+            this.matchedStartups = ids.map(id => byId.get(id)).filter(Boolean) as StartupProfile[];
+          },
+          error: console.error
+        });
+      },
+      error: console.error
+    });
   }
 
   private initForm() {
