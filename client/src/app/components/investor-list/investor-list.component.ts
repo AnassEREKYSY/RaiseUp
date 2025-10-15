@@ -4,6 +4,8 @@ import { InvestorsService } from '../../services/investors.service';
 import { InvestorProfile } from '../../core/models/investor.model';
 import { User } from '../../core/models/user.model';
 import { CommonModule } from '@angular/common';
+import { Subscription } from 'rxjs';
+import { SearchBusService } from '../../services/search-bus.service';
 
 @Component({
   selector: 'app-investor-list',
@@ -17,8 +19,10 @@ export class InvestorListComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('sentinel', { static: true }) sentinelRef!: ElementRef<HTMLDivElement>;
 
   private io?: IntersectionObserver;
+  private sub?: Subscription;
 
   allInvestors: { user: User; profile: InvestorProfile }[] = [];
+  filtered: { user: User; profile: InvestorProfile }[] = [];
   visible: { user: User; profile: InvestorProfile }[] = [];
 
   initialRows = 2;
@@ -33,7 +37,11 @@ export class InvestorListComponent implements OnInit, AfterViewInit, OnDestroy {
   skeletonInitial: any[] = [];
   skeletonMore: any[] = [];
 
-  constructor(private investorService: InvestorsService, private cdr: ChangeDetectorRef) {}
+  constructor(
+    private investorService: InvestorsService,
+    private cdr: ChangeDetectorRef,
+    private searchBus: SearchBusService,
+  ) {}
 
   ngOnInit(): void {
     const cols = Math.max(1, Math.floor((window.innerWidth - 60) / this.cardMinWidth));
@@ -59,12 +67,37 @@ export class InvestorListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.investorService.getAll().subscribe({
       next: (res: any[]) => {
         this.allInvestors = res.map(item => ({ user: item.user, profile: item }));
+        this.applyFilter('');
         this.loadingInitial = false;
-        this.appendNext(this.skeletonInitialCount);
         this.setupObserver();
+        this.sub = this.searchBus.observe().subscribe(q => {
+          this.applyFilter(q);
+        });
       },
       error: () => { this.loadingInitial = false; }
     });
+  }
+
+  private applyFilter(q: string) {
+    const query = (q || '').toLowerCase();
+    const matches = (it: { user: User; profile: InvestorProfile }) => {
+      if (!query) return true;
+      const { profile, user } = it;
+      const hay = [
+        user?.fullName,
+        user?.email,
+        profile?.companyName,
+        (profile?.industries || []).join(' '),
+        (profile?.stagePreference || []).join(' '),
+        profile?.location,
+        profile?.bio,
+      ].filter(Boolean).join(' ').toLowerCase();
+      return hay.includes(query);
+    };
+    this.filtered = this.allInvestors.filter(matches);
+    this.visible = [];
+    this.appendNext(this.skeletonInitialCount);
+    this.cdr.detectChanges();
   }
 
   private setupObserver(): void {
@@ -80,10 +113,10 @@ export class InvestorListComponent implements OnInit, AfterViewInit, OnDestroy {
   private appendNext(count: number): void {
     if (this.loadingMore) return;
     const already = this.visible.length;
-    if (already >= this.allInvestors.length) return;
+    if (already >= this.filtered.length) return;
 
     this.loadingMore = true;
-    const nextSlice = this.allInvestors.slice(already, already + count);
+    const nextSlice = this.filtered.slice(already, already + count);
     setTimeout(() => {
       this.visible = this.visible.concat(nextSlice);
       this.loadingMore = false;
@@ -96,5 +129,6 @@ export class InvestorListComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.io?.disconnect();
+    this.sub?.unsubscribe();
   }
 }

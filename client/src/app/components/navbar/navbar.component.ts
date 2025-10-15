@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Output, ElementRef } from '@angular/core';
+import { Component, EventEmitter, HostListener, Output, ElementRef, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
@@ -8,6 +8,8 @@ import { NotificationsService } from '../../services/notifications.service';
 import { NotificationDto } from '../../core/dtos/notification.dto';
 import { MatchDto } from '../../core/dtos/match.dto';
 import { MatchesService } from '../../services/match.service';
+import { SearchBusService } from '../../services/search-bus.service';
+import { debounceTime, distinctUntilChanged, startWith } from 'rxjs/operators';
 
 @Component({
   selector: 'app-navbar',
@@ -16,7 +18,7 @@ import { MatchesService } from '../../services/match.service';
   templateUrl: './navbar.component.html',
   styleUrls: ['./navbar.component.scss']
 })
-export class NavbarComponent {
+export class NavbarComponent implements OnInit {
   @Output() searchSubmit = new EventEmitter<string>();
   form!: FormGroup;
 
@@ -35,16 +37,28 @@ export class NavbarComponent {
     private router: Router,
     private notif: NotificationsService,
     private matches: MatchesService,
-    private el: ElementRef<HTMLElement>
+    private el: ElementRef<HTMLElement>,
+    private searchBus: SearchBusService
   ) {
     this.form = this.fb.group({ q: [''] });
     this.user = this.auth.currentUser;
     this.refreshBadge();
   }
 
+  ngOnInit() {
+    this.form.get('q')!.valueChanges
+      .pipe(
+        startWith(this.form.get('q')!.value || ''),
+        debounceTime(200),
+        distinctUntilChanged()
+      )
+      .subscribe((val: string) => this.searchBus.set(val || ''));
+  }
+
   onSubmit() {
     const q = this.form.value.q?.trim() || '';
     this.searchSubmit.emit(q);
+    this.searchBus.set(q);
   }
 
   goProfile() {

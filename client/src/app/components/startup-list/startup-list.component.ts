@@ -1,11 +1,12 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, OnDestroy, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { StartupCardComponent } from "../startup-card/startup-card.component";
 import { StartupProfile } from '../../core/models/startup.model';
 import { User } from '../../core/models/user.model';
 import { StartupsService } from '../../services/startups.service';
-import { fromEvent, Subject } from 'rxjs';
+import { fromEvent, Subject, Subscription } from 'rxjs';
 import { debounceTime, takeUntil } from 'rxjs/operators';
+import { SearchBusService } from '../../services/search-bus.service';
 
 @Component({
   selector: 'app-startup-list',
@@ -20,8 +21,11 @@ export class StartupListComponent implements AfterViewInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
   private io?: IntersectionObserver;
+  private sub?: Subscription;
+
 
   allStartups: { user: User; profile: StartupProfile }[] = [];
+  filtered: { user: User; profile: StartupProfile }[] = [];
   visible: { user: User; profile: StartupProfile }[] = [];
 
   initialRows = 2;
@@ -33,8 +37,15 @@ export class StartupListComponent implements AfterViewInit, OnDestroy {
 
   skeletonInitialCount = 8;
   skeletonMoreCount = 8;
+  skeletonInitial: any[] = [];
+  skeletonMore: any[] = [];
+  trackByIndex = (i: number) => i;
 
-  constructor(private startupService: StartupsService) {}
+  constructor(
+    private startupService: StartupsService,
+    private searchBus: SearchBusService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngAfterViewInit(): void {
     this.computePageSizes();
@@ -46,8 +57,11 @@ export class StartupListComponent implements AfterViewInit, OnDestroy {
       next: (res: any[]) => {
         this.allStartups = res.map(item => ({ user: item.user, profile: item }));
         this.loadingInitial = false;
-        this.appendNext(this.skeletonInitialCount);
+        this.applyFilter('');
         this.setupObserver();
+        this.sub = this.searchBus.observe().subscribe(q => {
+          this.applyFilter(q);
+        });
       },
       error: () => { this.loadingInitial = false; }
     });
@@ -61,6 +75,31 @@ export class StartupListComponent implements AfterViewInit, OnDestroy {
     this.pageSize = cols;
     this.skeletonMoreCount = this.pageSize;
     this.skeletonInitialCount = cols * this.initialRows;
+    this.skeletonInitial = Array.from({ length: this.skeletonInitialCount });
+    this.skeletonMore = Array.from({ length: this.skeletonMoreCount });
+    this.cdr.detectChanges();
+  }
+
+  private applyFilter(q: string) {
+    const query = (q || '').toLowerCase();
+    const matches = (it: { user: User; profile: StartupProfile }) => {
+      if (!query) return true;
+      const { profile, user } = it;
+      const hay = [
+        user?.fullName,
+        user?.email,
+        profile?.companyName,
+        profile?.description,
+        profile?.industry,
+        profile?.stage,
+        profile?.country,
+        profile?.traction,
+      ].filter(Boolean).join(' ').toLowerCase();
+      return hay.includes(query);
+    };
+    this.filtered = this.allStartups.filter(matches);
+    this.visible = [];
+    this.appendNext(this.skeletonInitialCount);
   }
 
   private setupObserver(): void {
@@ -76,12 +115,12 @@ export class StartupListComponent implements AfterViewInit, OnDestroy {
   private appendNext(count: number): void {
     if (this.loadingMore) return;
     const already = this.visible.length;
-    if (already >= this.allStartups.length) return;
+    if (already >= this.filtered.length) return;
 
     this.loadingMore = true;
-    const nextSlice = this.allStartups.slice(already, already + count);
+    const nextSlice = this.filtered.slice(already, already + count);
 
-    setTimeout(() => { // simulate async chunking; keeps shimmer visible briefly
+    setTimeout(() => {
       this.visible = this.visible.concat(nextSlice);
       this.loadingMore = false;
     }, 350);
@@ -93,5 +132,6 @@ export class StartupListComponent implements AfterViewInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
     this.io?.disconnect();
+    this.sub?.unsubscribe();
   }
 }
