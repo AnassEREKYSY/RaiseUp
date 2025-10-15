@@ -1,13 +1,30 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment.development';
+import { Role } from '../core/enums/role.enum';
 
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private base = environment.apiUrl + '/auth';
-  constructor(private http: HttpClient) {}
+
+  private readySubject = new BehaviorSubject<boolean>(false);
+  ready$ = this.readySubject.asObservable();
+
+  private token: string | null = null;
+  private user: any | null = null;
+
+  constructor(private http: HttpClient) {
+    this.hydrate();
+  }
+
+  private hydrate() {
+    this.token = localStorage.getItem('token');
+    const raw = localStorage.getItem('user');
+    this.user = raw ? JSON.parse(raw) : null;
+    this.readySubject.next(true);
+  }
 
   register(data: any): Observable<any> {
     return this.http.post(`${this.base}/register`, data);
@@ -17,33 +34,37 @@ export class AuthService {
     return this.http.post(`${this.base}/login`, credentials).pipe(
       tap((res: any) => {
         if (res.token) {
+          this.token = res.token;
+          this.user = res.user || null;
           localStorage.setItem('token', res.token);
           localStorage.setItem('user', JSON.stringify(res.user));
+          this.readySubject.next(true);
         }
       })
     );
   }
 
   logout() {
+    this.token = null;
+    this.user = null;
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    this.readySubject.next(true);
   }
 
   get isLoggedIn(): boolean {
-    return !!localStorage.getItem('token');
+    return !!this.token;
   }
 
   get currentUser() {
-    return JSON.parse(localStorage.getItem('user') || '{}');
+    return this.user;
   }
 
-  getUserRole(): 'INVESTOR' | 'STARTUP' | null {
-    const user = this.currentUser;
-    return user?.role || null;
+  getUserRole(): Role | null {
+    return this.user?.role || null;
   }
 
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return this.token;
   }
-
 }

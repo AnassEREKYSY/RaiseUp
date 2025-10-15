@@ -1,11 +1,41 @@
-<div class="card-list" *ngIf="!loading; else loadingTpl">
-  <app-startup-card
-    *ngFor="let s of startups"
-    [user]="s.user"
-    [profile]="s.profile">
-  </app-startup-card>
+<div #grid class="card-list">
+
+  <ng-container *ngIf="!loadingInitial; else initialSkeletons">
+    <app-startup-card
+      *ngFor="let s of visible; trackBy: trackById"
+      [user]="s.user"
+      [profile]="s.profile">
+    </app-startup-card>
+
+    <ng-container *ngIf="loadingMore">
+      <div class="card skeleton" *ngFor="let _ of [].constructor(skeletonMoreCount)">
+        <div class="image-container shimmer"></div>
+        <div class="card-content">
+          <div class="line w-70 shimmer"></div>
+          <div class="meta">
+            <div class="chip w-35 shimmer"></div>
+            <div class="chip w-25 shimmer"></div>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+
+    <div #sentinel class="sentinel"></div>
+  </ng-container>
+
 </div>
 
-<ng-template #loadingTpl>
-  <p class="loading">Loading startups...</p>
+<ng-template #initialSkeletons>
+  <div class="card-list">
+    <div class="card skeleton" *ngFor="let _ of [].constructor(skeletonInitialCount)">
+      <div class="image-container shimmer"></div>
+      <div class="card-content">
+        <div class="line w-70 shimmer"></div>
+        <div class="meta">
+          <div class="chip w-35 shimmer"></div>
+          <div class="chip w-25 shimmer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
 </ng-template>
