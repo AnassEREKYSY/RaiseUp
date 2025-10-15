@@ -202,3 +202,6 @@
   .actions { order: 2; justify-content: flex-start; }
   .search { order: 3; }
 }
+
+.logo { display:flex; align-items:center; gap:8px; }
+.logo-img { height:128px; width:220px; display:block; position: absolute; }
