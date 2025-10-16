@@ -1,24 +1,27 @@
 import express from 'express';
 import request from 'supertest';
-import { prisma } from '../src/prisma';
-import { MessageController } from '../src/controllers/message.controller';
 
 let svcSpies: {
   getByMatch: jest.Mock;
   create: jest.Mock;
+} = {
+  getByMatch: jest.fn(),
+  create: jest.fn()
 };
 
 jest.mock('../src/services/message.service', () => {
-  svcSpies = {
+  const impl = {
     getByMatch: jest.fn(),
     create: jest.fn(),
   };
+  (svcSpies as any) = impl;
   return {
-    MessageService: jest.fn().mockImplementation(() => svcSpies),
+    MessageService: jest.fn().mockImplementation(() => impl),
   };
 });
 
 const notifyCreate = jest.fn();
+
 jest.mock('../src/services/notification.service', () => ({
   NotificationService: jest.fn().mockImplementation(() => ({
     create: notifyCreate,
@@ -29,6 +32,8 @@ jest.mock('../src/prisma', () => ({
   prisma: { match: { findUnique: jest.fn() } },
 }));
 
+const { prisma } = require('../src/prisma');
+const { MessageController } = require('../src/controllers/message.controller');
 
 function buildApp(userId: string | null = 'me1') {
   const app = express();

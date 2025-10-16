@@ -1,9 +1,12 @@
 import express from 'express';
 import request from 'supertest';
-import { NotificationController } from '../src/controllers/notification.controller';
 
-
-let svc: {
+let svc = {
+  getByUser: jest.fn(),
+  create: jest.fn(),
+  markAsRead: jest.fn(),
+  delete: jest.fn(),
+} as {
   getByUser: jest.Mock;
   create: jest.Mock;
   markAsRead: jest.Mock;
@@ -11,15 +14,17 @@ let svc: {
 };
 
 jest.mock('../src/services/notification.service', () => {
-  svc = {
+  const impl = {
     getByUser: jest.fn(),
     create: jest.fn(),
     markAsRead: jest.fn(),
     delete: jest.fn(),
   };
-  return { NotificationService: jest.fn().mockImplementation(() => svc) };
+  (svc as any) = impl;
+  return { NotificationService: jest.fn().mockImplementation(() => impl) };
 });
 
+const { NotificationController } = require('../src/controllers/notification.controller');
 
 function buildApp() {
   const app = express();

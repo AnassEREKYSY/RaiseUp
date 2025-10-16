@@ -1,7 +1,6 @@
 import express from 'express';
 import request from 'supertest';
 import { Industry, Stage } from '../src/models/enums';
-import { StartupController } from '../src/controllers/startup.controller';
 
 let svc: {
   getAll: jest.Mock;
@@ -10,10 +9,17 @@ let svc: {
   update: jest.Mock;
   delete: jest.Mock;
   search: jest.Mock;
+} = {
+  getAll: jest.fn(),
+  getById: jest.fn(),
+  create: jest.fn(),
+  update: jest.fn(),
+  delete: jest.fn(),
+  search: jest.fn(),
 };
 
 jest.mock('../src/services/startup.service', () => {
-  svc = {
+  const impl = {
     getAll: jest.fn(),
     getById: jest.fn(),
     create: jest.fn(),
@@ -21,9 +27,11 @@ jest.mock('../src/services/startup.service', () => {
     delete: jest.fn(),
     search: jest.fn(),
   };
-  return { StartupService: jest.fn().mockImplementation(() => svc) };
+  (svc as any) = impl;
+  return { StartupService: jest.fn().mockImplementation(() => impl) };
 });
 
+const { StartupController } = require('../src/controllers/startup.controller');
 
 function appWithUser(userId: string | null = 'u1') {
   const app = express();
@@ -46,7 +54,7 @@ function appWithUser(userId: string | null = 'u1') {
 
 describe('StartupController', () => {
   beforeEach(() => {
-    Object.values(svc).forEach(fn => (fn as jest.Mock).mockReset());
+    Object.values(svc).forEach(fn => fn.mockReset());
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 

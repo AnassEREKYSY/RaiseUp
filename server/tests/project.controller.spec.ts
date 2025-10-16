@@ -1,6 +1,5 @@
 import express from 'express';
 import request from 'supertest';
-import { ProjectController } from '../src/controllers/project.controller';
 
 let svc: {
   getAll: jest.Mock;
@@ -9,10 +8,10 @@ let svc: {
   create: jest.Mock;
   update: jest.Mock;
   delete: jest.Mock;
-};
+} = {} as any;
 
 jest.mock('../src/services/project.service', () => {
-  svc = {
+  const impl = {
     getAll: jest.fn(),
     getById: jest.fn(),
     findStartupByUserId: jest.fn(),
@@ -20,9 +19,11 @@ jest.mock('../src/services/project.service', () => {
     update: jest.fn(),
     delete: jest.fn(),
   };
-  return { ProjectService: jest.fn().mockImplementation(() => svc) };
+  (svc as any) = impl;
+  return { ProjectService: jest.fn().mockImplementation(() => impl) };
 });
 
+const { ProjectController } = require('../src/controllers/project.controller');
 
 function appWithUser(userId: string | null = 'u1') {
   const app = express();
@@ -44,7 +45,7 @@ function appWithUser(userId: string | null = 'u1') {
 
 describe('ProjectController', () => {
   beforeEach(() => {
-    Object.values(svc).forEach(fn => (fn as jest.Mock).mockReset());
+    Object.values(svc).forEach(fn => fn.mockReset());
     jest.spyOn(console, 'error').mockImplementation(() => {});
   });
 
