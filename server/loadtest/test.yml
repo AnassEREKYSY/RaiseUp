@@ -1,0 +1,117 @@
+config:
+  target: "http://localhost:4000"
+  processor: "./processor.js"
+  variables:
+    base: "{{ $env.LT_BASE || '/api' }}"
+  phases:
+    - duration: 120
+      arrivalRate: 5
+      rampTo: 50
+    - duration: 180
+      arrivalRate: 50
+    - duration: 60
+      arrivalRate: 50
+      rampTo: 0
+  ensure:
+    - "http.response_time.p95 < 900"
+    - "errors.rate < 1%"
+
+scenarios:
+  - name: "Startups: list, search, get one"
+    flow:
+      - get:
+          url: "{{ base }}/startup/all/"
+          expect: [{ statusCode: 200 }]
+          capture:
+            - json: "$[0].id"
+              as: "startupId0"
+      - get:
+          url: "{{ base }}/startup/search?industry={{ pickIndustry }}&stage={{ pickStage }}&country={{ pickCountry }}"
+          expect: [{ statusCode: 200 }]
+      - get:
+          ifTrue: "{{ startupId0 }}"
+          url: "{{ base }}/startup/one/{{ startupId0 }}"
+          expect: [{ statusCode: 200 }]
+
+  - name: "Investors: list, search, get one"
+    flow:
+      - get:
+          url: "{{ base }}/investor/all/"
+          expect: [{ statusCode: 200 }]
+          capture:
+            - json: "$[0].id"
+              as: "investorId0"
+      - get:
+          url: "{{ base }}/investor/search?industry={{ pickIndustry }}&stagePreference={{ pickStage }}&location={{ pickCountry }}"
+          expect: [{ statusCode: 200 }]
+      - get:
+          ifTrue: "{{ investorId0 }}"
+          url: "{{ base }}/investor/one/{{ investorId0 }}"
+          expect: [{ statusCode: 200 }]
+
+  - name: "Projects: CRUD (light)"
+    flow:
+      - function: maybeRunWrite
+      - post:
+          ifTrue: "{{ doWrite }}"
+          url: "{{ base }}/project/create"
+          json:
+            title: "{{ fakeProjectTitle }}"
+            description: "{{ fakeParagraph }}"
+            budget: {{ fakeBudget }}
+          expect: [{ statusCode: 201 }]
+          capture:
+            - json: "$.id"
+              as: "projId"
+      - get:
+          ifTrue: "{{ doWrite }}"
+          url: "{{ base }}/project/one/{{ projId }}"
+          expect: [{ statusCode: 200 }]
+      - put:
+          ifTrue: "{{ doWrite }}"
+          url: "{{ base }}/project/update/{{ projId }}"
+          json:
+            description: "{{ fakeParagraph }}"
+          expect: [{ statusCode: 200 }]
+      - delete:
+          ifTrue: "{{ doWrite }}"
+          url: "{{ base }}/project/delete/{{ projId }}"
+          expect: [{ statusCode: 204 }]
+
+  - name: "Match + Message"
+    flow:
+      - get:
+          url: "{{ base }}/startup/all/"
+          expect: [{ statusCode: 200 }]
+          capture:
+            - json: "$[1].userId"
+              as: "targetUserId"
+      - post:
+          ifTrue: "{{ targetUserId }}"
+          url: "{{ base }}/match/get-or-create"
+          json:
+            targetUserId: "{{ targetUserId }}"
+          expect: [{ statusCode: 200 }]
+          capture:
+            - json: "$.id"
+              as: "matchId"
+      - post:
+          ifTrue: "{{ matchId }}"
+          url: "{{ base }}/message/create"
+          json:
+            matchId: "{{ matchId }}"
+            content: "{{ fakeSentence }}"
+          expect: [{ statusCode: 201 }]
+
+  - name: "Notifications: list + mark read"
+    flow:
+      - get:
+          url: "{{ base }}/notification/one/{{ meId }}"
+          expect: [{ statusCode: 200 }]
+          capture:
+            - json: "$[0].id"
+              as: "notifId0"
+      - patch:
+          ifTrue: "{{ notifId0 }}"
+          url: "{{ base }}/notification/read/{{ notifId0 }}"
+          expect: [{ statusCode: 200 }]

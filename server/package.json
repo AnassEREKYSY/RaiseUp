@@ -11,7 +11,9 @@
     "format": "prettier --write .",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:cov": "jest --coverage"
+    "test:cov": "jest --coverage",
+    "load:test": "artillery run loadtest/test.yml --output loadtest/report.json",
+    "load:report": "artillery report --output loadtest/report.html loadtest/report.json"
   },
   "keywords": [],
   "author": "",
@@ -28,16 +30,19 @@
     "socket.io": "^4.8.1"
   },
   "devDependencies": {
+    "@faker-js/faker": "^9.9.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jest": "^30.0.0",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^24.7.2",
+    "@types/node": "^24.8.0",
     "@types/supertest": "^6.0.3",
+    "artillery": "^2.0.21",
     "eslint": "^9.37.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-import": "^2.32.0",
     "jest": "^30.2.0",
+    "node-fetch": "^3.3.2",
     "prettier": "^3.6.2",
     "prisma": "^6.16.3",
     "supertest": "^7.1.4",
