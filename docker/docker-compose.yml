@@ -9,8 +9,30 @@ services:
       - "5433:5432"
     volumes:
       - investor_db_data:/var/lib/postgresql/data
-    networks:
-      - investor_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [ investor_net ]
+
+  api:
+    image: ghcr.io/${GITHUB_USER:-anasserekysy}/raiseup-server:latest
+    env_file: ./server/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "4000:4000"
+    networks: [ investor_net ]
+
+  client:
+    image: ghcr.io/${GITHUB_USER:-anasserekysy}/raiseup-client:latest
+    depends_on:
+      - api
+    ports:
+      - "8080:80"
+    networks: [ investor_net ]
 
   pgadmin:
     image: dpage/pgadmin4:8
@@ -20,9 +42,9 @@ services:
     ports:
       - "8081:80"
     depends_on:
-      - db
-    networks:
-      - investor_net
+      db:
+        condition: service_healthy
+    networks: [ investor_net ]
 
 networks:
   investor_net:
