@@ -104,10 +104,9 @@ jobs:
         working-directory: client
         run: npm ci
 
-      - name: Build client
+      - name: Build client (SPA, no prerender)
         working-directory: client
-        run: |
-          if [ -f angular.json ]; then npm run build; else npm run build || true; fi
+        run: npx ng build --configuration production --prerender=false
 
       - name: Install Playwright browsers
         working-directory: client
