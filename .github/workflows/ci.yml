@@ -50,16 +50,14 @@ jobs:
 
       - name: Build server
         working-directory: server
-        run: |
-          if [ -f tsconfig.json ]; then npm run build || true; fi
+        run: npx tsc -p tsconfig.build.json
 
       - name: Unit tests with coverage
         working-directory: server
         env:
           NODE_ENV: test
           DATABASE_URL: ${{ vars.DATABASE_URL }}
-        run: |
-          if [ -f package.json ]; then npm test -- --ci --coverage --runInBand || npm test -- --coverage; fi
+        run: npx jest --ci --coverage --runInBand --config ./jest.config.ts
 
       - name: Upload unit test coverage
         if: always()
@@ -120,8 +118,7 @@ jobs:
         env:
           CI: true
         run: |
-          if npm run | grep -q "e2e:test"; then npm run e2e:test || true; fi
-          if [ ! -d "playwright-report" ]; then npx playwright test --reporter=html || true; fi
+          if npm run | grep -q "e2e:test"; then npm run e2e:test || true; else npx playwright test --reporter=html || true; fi
 
       - name: Upload E2E report
         if: always()
