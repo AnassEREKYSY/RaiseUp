@@ -104,9 +104,9 @@ jobs:
         working-directory: client
         run: npm ci
 
-      - name: Build client (SPA, no prerender)
+      - name: Build client (browser-only)
         working-directory: client
-        run: npx ng build --configuration production --prerender=false
+        run: npx ng build --configuration production --output-mode=browser
 
       - name: Install Playwright browsers
         working-directory: client
