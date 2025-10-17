@@ -6,8 +6,8 @@ import { AuthService } from '../../services/auth.service';
 import { OnboardingService } from '../../services/onboarding.service';
 import { Industry } from '../../core/enums/industry.enum';
 import { Stage } from '../../core/enums/stage.enum';
+import { Role } from '../../core/enums/role.enum';
 
-type RoleType = 'INVESTOR' | 'STARTUP';
 
 @Component({
   selector: 'app-onboarding',
@@ -21,7 +21,7 @@ export class OnboardingComponent implements OnInit {
   totalSteps = 3;
 
   form!: FormGroup;
-  role!: RoleType;
+  role!: Role;
 
   industries = Object.values(Industry);
   stages = Object.values(Stage);
@@ -41,7 +41,7 @@ export class OnboardingComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.role = (this.auth.getUserRole() as RoleType) || 'STARTUP';
+    this.role = (this.auth.getUserRole() as Role) || 'STARTUP';
     this.initForm();
   }
 
