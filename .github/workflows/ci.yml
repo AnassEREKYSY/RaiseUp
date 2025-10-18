@@ -99,12 +99,20 @@ jobs:
       - name: Install Playwright browsers
         working-directory: client
         run: npx playwright install --with-deps
+      - name: Start static server
+        working-directory: client
+        run: |
+          npx -y serve -s dist/client/browser -l 4200 & echo $! > /tmp/web.pid
+      - name: Wait for server
+        run: npx -y wait-on http://localhost:4200
       - name: Run E2E tests (HTML report)
         working-directory: client
         env:
           CI: true
-        run: |
-          if npm run | grep -q "e2e:test"; then npm run e2e:test || true; else npx playwright test --reporter=html || true; fi
+        run: npx playwright test --reporter=html
+      - name: Stop static server
+        if: always()
+        run: kill $(cat /tmp/web.pid) || true
       - name: Upload E2E report
         if: always()
         uses: actions/upload-artifact@v4
