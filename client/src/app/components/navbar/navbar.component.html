@@ -39,7 +39,7 @@
               <div class="type">Match request</div>
               <div class="text">
                 From:
-                <span class="bold">{{ (m.investorId === user?.id) ? 'You → Startup' : 'Investor → You' }}</span>
+                <span class="bold">{{ (m.investorId === user.id) ? 'You → Startup' : 'Investor → You' }}</span>
               </div>
               <div class="time">{{ m.createdAt | date:'short' }}</div>
             </div>
