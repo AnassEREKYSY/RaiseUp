@@ -109,7 +109,7 @@ jobs:
         working-directory: client
         env:
           CI: true
-        run: npx playwright test --reporter=html
+        run: npx playwright test -c e2e/playwright.config.ts --reporter=html
       - name: Stop static server
         if: always()
         run: kill $(cat /tmp/web.pid) || true
