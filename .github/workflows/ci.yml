@@ -15,8 +15,8 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_CLIENT: ${{ github.repository_owner }}/raiseup-client
-  IMAGE_SERVER: ${{ github.repository_owner }}/raiseup-server
+  IMAGE_CLIENT: ${{ toLower(github.repository_owner) }}/raiseup-client
+  IMAGE_SERVER: ${{ toLower(github.repository_owner) }}/raiseup-server
 
 jobs:
   unit_and_load_tests:
