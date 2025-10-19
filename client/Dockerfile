@@ -3,8 +3,10 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
-ARG NG_BUILD_CONFIG=production-spa
-RUN npx ng build --configuration $NG_BUILD_CONFIG
+
+RUN npx ng build --configuration production-spa
+
+RUN ! grep -R -nE "http://(localhost|127\.0\.0\.1):4000" dist/client/browser || (echo "ERROR: Found localhost:4000 in built bundle" && exit 1)
 
 FROM nginx:1.27-alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
