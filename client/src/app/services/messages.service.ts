@@ -3,11 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { map, tap } from 'rxjs/operators';
 import { MessageDto } from '../core/dtos/message.dto';
+import { environment } from '../../environments/environment.development';
 
 @Injectable({ providedIn: 'root' })
 export class MessagesService {
   constructor(private http: HttpClient) { }
-  private api = 'http://localhost:4000/api';
+  private api = environment.apiUrl;
   private currentMatchId$ = new BehaviorSubject<string | null>(null);
 
   getOrCreateConversation(targetUserId: string, opts?: { projectId?: string; investorProfileId?: string }) {

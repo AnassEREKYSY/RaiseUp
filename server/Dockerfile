@@ -9,8 +9,10 @@ RUN npx tsc -p tsconfig.build.json
 FROM node:20-alpine
 WORKDIR /app
 ENV NODE_ENV=production
-COPY --from=build /app/node_modules ./node_modules
-COPY --from=build /app/prisma ./prisma
+COPY package*.json ./
+RUN npm ci --omit=dev
+COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
+COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=build /app/dist ./dist
 EXPOSE 4000
-CMD ["sh","-c","npx prisma migrate deploy && node dist/index.js"]
+CMD ["sh","-lc","npx prisma migrate deploy && node dist/index.js"]
