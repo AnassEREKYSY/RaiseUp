@@ -150,7 +150,7 @@ jobs:
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          password: ${{ secrets.GHCR_TOKEN }}
 
       - name: Set image tags
         id: meta
@@ -186,3 +186,124 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.OWNER_LC }}/${{ env.IMAGE_CLIENT }}:${{ steps.meta.outputs.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+  deploy_to_ovh:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    needs: docker_build_push
+    steps:
+      - name: Compute lowercase owner and image names
+        run: |
+          owner_lc="$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
+          echo "OWNER_LC=$owner_lc" >> "$GITHUB_ENV"
+          echo "REGISTRY=ghcr.io" >> "$GITHUB_ENV"
+          echo "SERVER_IMAGE=$owner_lc/raiseup-server" >> "$GITHUB_ENV"
+          echo "CLIENT_IMAGE=$owner_lc/raiseup-client" >> "$GITHUB_ENV"
+
+      - name: Deploy via SSH to OVH
+        uses: appleboy/ssh-action@v1.0.0
+        env:
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+        with:
+          host: ${{ secrets.OVH_HOST }}
+          username: ${{ secrets.OVH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: REGISTRY,OWNER_LC,SERVER_IMAGE,CLIENT_IMAGE,GHCR_TOKEN,POSTGRES_PASSWORD
+          script: |
+            set -euo pipefail
+
+            if ! command -v docker >/dev/null 2>&1; then
+              curl -fsSL https://get.docker.com | sh
+              sudo usermod -aG docker $USER || true
+            fi
+
+            if ! docker compose version >/dev/null 2>&1; then
+              mkdir -p ~/.docker/cli-plugins
+              curl -fsSL "https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o ~/.docker/cli-plugins/docker-compose
+              chmod +x ~/.docker/cli-plugins/docker-compose
+            fi
+
+            APP_DIR=$HOME/raiseup
+            mkdir -p "$APP_DIR"
+            cd "$APP_DIR"
+
+            echo "$GHCR_TOKEN" | docker login "$REGISTRY" -u "${{ github.actor }}" --password-stdin
+
+            cat > .env.db <<'EOF'
+            POSTGRES_USER=postgres
+            POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+            POSTGRES_DB=investor_match
+            PGADMIN_DEFAULT_EMAIL=admin@example.com
+            PGADMIN_DEFAULT_PASSWORD=admin123
+            DB_PORT=5432
+            PGADMIN_PORT=5050
+            EOF
+
+            cat > .env.server <<'EOF'
+            NODE_ENV=production
+            PORT=4000
+            DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/investor_match?schema=public
+            # JWT_SECRET=...
+            # JWT_REFRESH_SECRET=...
+            # CORS_ORIGIN=http://YOUR_VM_PUBLIC_IP:8080
+            EOF
+
+            cat > docker-compose.yml <<'YML'
+            version: "3.9"
+            services:
+              db:
+                image: postgres:16-alpine
+                restart: unless-stopped
+                env_file: .env.db
+                volumes:
+                  - investor_db_data:/var/lib/postgresql/data
+                healthcheck:
+                  test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+                  interval: 5s
+                  timeout: 5s
+                  retries: 20
+                networks: [ investor_net ]
+
+              api:
+                image: ${REGISTRY}/${SERVER_IMAGE}:latest
+                env_file: .env.server
+                depends_on:
+                  db:
+                    condition: service_healthy
+                expose:
+                  - "4000"
+                restart: unless-stopped
+                networks: [ investor_net ]
+
+              client:
+                image: ${REGISTRY}/${CLIENT_IMAGE}:latest
+                depends_on:
+                  - api
+                ports:
+                  - "8080:80"
+                restart: unless-stopped
+                networks: [ investor_net ]
+
+              pgadmin:
+                image: dpage/pgadmin4:8
+                env_file: .env.db
+                ports:
+                  - "8081:80"
+                depends_on:
+                  db:
+                    condition: service_healthy
+                restart: unless-stopped
+                networks: [ investor_net ]
+
+            networks:
+              investor_net:
+
+            volumes:
+              investor_db_data:
+            YML
+
+            docker compose pull
+            docker compose up -d
+
+            docker compose exec -T db sh -lc 'until pg_isready -U "$POSTGRES_USER" -h 127.0.0.1; do sleep 1; done'

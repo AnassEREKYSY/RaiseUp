@@ -2,11 +2,8 @@ version: "3.9"
 services:
   db:
     image: postgres:16-alpine
-    container_name: investor-db
     restart: unless-stopped
     env_file: .env.db
-    ports:
-      - "5433:5432"
     volumes:
       - investor_db_data:/var/lib/postgresql/data
     healthcheck:
@@ -18,12 +15,13 @@ services:
 
   api:
     image: ghcr.io/${GITHUB_USER:-anasserekysy}/raiseup-server:latest
-    env_file: ./server/.env
+    env_file: .env.server
     depends_on:
       db:
         condition: service_healthy
-    ports:
-      - "4000:4000"
+    expose:
+      - "4000"
+    restart: unless-stopped
     networks: [ investor_net ]
 
   client:
@@ -32,11 +30,11 @@ services:
       - api
     ports:
       - "8080:80"
+    restart: unless-stopped
     networks: [ investor_net ]
 
   pgadmin:
     image: dpage/pgadmin4:8
-    container_name: investor-pgadmin
     restart: unless-stopped
     env_file: .env.db
     ports:
