@@ -14,5 +14,6 @@ RUN npm ci --omit=dev
 COPY --from=build /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=build /app/node_modules/@prisma ./node_modules/@prisma
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/prisma ./prisma
 EXPOSE 4000
-CMD ["sh","-lc","npx prisma migrate deploy && node dist/index.js"]
+CMD ["sh","-lc","npx prisma migrate deploy --schema ./prisma/schema.prisma && node dist/index.js"]
