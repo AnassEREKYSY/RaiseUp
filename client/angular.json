@@ -72,13 +72,13 @@
               "outputMode": "static"
             }
           },
-          "defaultConfiguration": "production"
+          "defaultConfiguration": "production-spa"
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "client:build:production"
+              "buildTarget": "client:build:production-spa"
             },
             "development": {
               "buildTarget": "client:build:development"
