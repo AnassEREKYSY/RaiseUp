@@ -188,6 +188,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.OWNER_LC }}/${{ env.IMAGE_CLIENT }}:${{ steps.meta.outputs.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          no-cache: true
 
   deploy_to_ovh:
     runs-on: ubuntu-latest
@@ -307,4 +308,4 @@ jobs:
             docker compose --project-name raiseup pull
             docker compose --project-name raiseup up -d
             docker compose --project-name raiseup exec -T db sh -lc 'until pg_isready -U "$POSTGRES_USER" -h 127.0.0.1; do sleep 1; done'
-            docker compose --project-name raiseup exec -T api sh -lc 'npx prisma migrate deploy || true'
+            docker compose --project-name raiseup exec -T api sh -lc 'npx prisma migrate deploy --schema /app/prisma/schema.prisma || true'
