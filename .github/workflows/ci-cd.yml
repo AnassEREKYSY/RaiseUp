@@ -196,7 +196,6 @@ jobs:
         run: |
           owner_lc="$(echo "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
           echo "OWNER_LC=$owner_lc" >> "$GITHUB_ENV"
-          echo "REGISTRY=ghcr.io" >> "$GITHUB_ENV"
           echo "SERVER_IMAGE=$owner_lc/raiseup-server" >> "$GITHUB_ENV"
           echo "CLIENT_IMAGE=$owner_lc/raiseup-client" >> "$GITHUB_ENV"
 
@@ -205,11 +204,12 @@ jobs:
         env:
           GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          CLIENT_HTTP_PORT: "3000"
         with:
           host: ${{ secrets.OVH_HOST }}
           username: ${{ secrets.OVH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: REGISTRY,OWNER_LC,SERVER_IMAGE,CLIENT_IMAGE,GHCR_TOKEN,POSTGRES_PASSWORD
+          envs: REGISTRY,OWNER_LC,SERVER_IMAGE,CLIENT_IMAGE,GHCR_TOKEN,POSTGRES_PASSWORD,CLIENT_HTTP_PORT
           script: |
             set -euo pipefail
 
@@ -244,13 +244,10 @@ jobs:
             NODE_ENV=production
             PORT=4000
             DATABASE_URL=postgresql://postgres:${POSTGRES_PASSWORD}@db:5432/investor_match?schema=public
-            # JWT_SECRET=...
-            # JWT_REFRESH_SECRET=...
-            # CORS_ORIGIN=http://YOUR_VM_PUBLIC_IP:8080
+            # CORS_ORIGIN=http://YOUR_VM_PUBLIC_IP:${CLIENT_HTTP_PORT}
             EOF
 
             cat > docker-compose.yml <<'YML'
-            version: "3.9"
             services:
               db:
                 image: postgres:16-alpine
@@ -281,7 +278,7 @@ jobs:
                 depends_on:
                   - api
                 ports:
-                  - "8080:80"
+                  - "${CLIENT_HTTP_PORT:-3000}:80"
                 restart: unless-stopped
                 networks: [ investor_net ]
 
@@ -303,7 +300,7 @@ jobs:
               investor_db_data:
             YML
 
+            docker compose down --remove-orphans || true
             docker compose pull
             docker compose up -d
-
             docker compose exec -T db sh -lc 'until pg_isready -U "$POSTGRES_USER" -h 127.0.0.1; do sleep 1; done'
