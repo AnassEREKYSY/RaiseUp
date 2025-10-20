@@ -3,11 +3,13 @@ import jwt from 'jsonwebtoken';
 import { prisma } from '../prisma';
 import { RegisterDto, LoginDto } from '../dtos/auth.dto';
 import { Role } from '../models/enums';
+import { AuthError } from '../errors/auth-error';
+
 
 export class AuthService {
   async register(data: RegisterDto) {
     const existing = await prisma.user.findUnique({ where: { email: data.email } });
-    if (existing) throw new Error('Email already registered');
+    if (existing) throw new AuthError('EMAIL_TAKEN', 'This email is already registered.', 409);
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
 
@@ -32,10 +34,10 @@ export class AuthService {
         startupProfile: { select: { id: true } }
       }
     });
-    if (!user) throw new Error('Invalid credentials');
+    if (!user) throw new AuthError('USER_NOT_FOUND', 'No account found with this email.', 404);
 
     const valid = await bcrypt.compare(data.password, user.password);
-    if (!valid) throw new Error('Invalid credentials');
+    if (!valid) throw new AuthError('WRONG_PASSWORD', 'Incorrect password.', 401);
 
     const token = jwt.sign(
       { id: user.id, role: user.role },

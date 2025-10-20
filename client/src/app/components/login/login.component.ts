@@ -61,9 +61,16 @@ export class LoginComponent implements OnInit {
         },
         error: (err) => {
           const status = err?.status;
-          const serverMsg = err?.error?.error || err?.error?.message;
+          const code = err?.error?.error?.code || err?.error?.code;
+          const serverMsg = err?.error?.error?.message || err?.error?.message;
 
-          if (status === 0) {
+          if (code === 'USER_NOT_FOUND' || status === 404) {
+            this.errorMsg = 'No account found with this email.';
+          } else if (code === 'WRONG_PASSWORD') {
+            this.errorMsg = 'Incorrect password.';
+          } else if (code === 'EMAIL_TAKEN') {
+            this.errorMsg = 'This email is already registered.';
+          } else if (status === 0) {
             this.errorMsg = 'Network error. Please check your connection and try again.';
           } else if (status === 400) {
             this.errorMsg = serverMsg || 'Invalid request. Please verify your inputs.';
