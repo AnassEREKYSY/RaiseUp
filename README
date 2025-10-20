@@ -1,0 +1,147 @@
+# RaiseUp — Investor & Startup Matchmaking Platform
+
+![Angular](https://img.shields.io/badge/Angular-19-red?logo=angular)
+![Node.js](https://img.shields.io/badge/Node.js-Express-green?logo=nodedotjs)
+![Prisma](https://img.shields.io/badge/ORM-Prisma-blue?logo=prisma)
+![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-336791?logo=postgresql)
+![Jest](https://img.shields.io/badge/Tests-Jest-C21325?logo=jest)
+![Playwright](https://img.shields.io/badge/E2E-Playwright-2EAD33?logo=microsoftplaywright)
+![Artillery](https://img.shields.io/badge/Load_Test-Artillery-F9A03C?logo=artillery)
+![Docker](https://img.shields.io/badge/Containerized-Docker-2496ED?logo=docker)
+![OVH](https://img.shields.io/badge/Deployed_on-OVH_Cloud-123F6D?logo=ovh)
+
+
+##  Overview
+
+**RaiseUp** is a modern matchmaking platform connecting **startups** looking for funding with **investors** seeking innovative projects.  
+It provides a clean and intuitive interface, chat and match features, and real-time data synchronization.
+
+This platform is built with:
+
+- **Frontend:** Angular 19 (standalone components, Material UI)
+- **Backend:** Node.js + Express + Prisma ORM
+- **Database:** PostgreSQL
+- **Testing:** Jest (unit) & Playwright (E2E) & Artillery (Load)
+- **Containerization:** Docker & Docker Compose
+- **Deployment:** GitHub Actions → OVH VPS
+
+
+
+## Features
+
+- User authentication (login/register via API)  
+- Role-based profiles (Investor / Startup)  
+- Matching system between investors & startups  
+- Real-time messaging dialog (chat)  
+- Search 
+- Responsive card grid UI  
+- Snack notifications (match status, errors, success)  
+- Lazy loading and caching  
+- Full CI/CD pipeline with tests and container build  
+
+
+## Main Interfaces
+
+| Interface | Screenshot |
+|-----------|------------|
+| **Login** | <a href="docs/screens/login.png"><img src="docs/screens/login.png" width="320" /></a> |
+| **Register** | <a href="docs/screens/register.png"><img src="docs/screens/register.png" width="320" /></a> |
+| **Dashboard** | <a href="docs/screens/dashboard.png"><img src="docs/screens/dashboard.png" width="320" /></a> |
+| **Profile** | <a href="docs/screens/profile.png"><img src="docs/screens/profile.png" width="320" /></a> |
+| **Investor – Details** | <a href="docs/screens/investor-details.png"><img src="docs/screens/investor-details.png" width="320" /></a> |
+| **Startup – Details** | <a href="docs/screens/startup-details-1.png"><img src="docs/screens/startup-details.png" width="320" /></a> |
+| **Startup – Details** | <a href="docs/screens/startup-details-2.png"><img src="docs/screens/startup-details.png" width="320" /></a> |
+| **Chat** | <a href="docs/screens/chat-dialog.png"><img src="docs/screens/chat-dialog.png" width="320" /></a> |
+| **Onboarding — Step 1** | <a href="docs/screens/onboarding-step-1.png"><img src="docs/screens/onboarding-step-1.png" width="320" /></a> |
+| **Onboarding — Step 2** | <a href="docs/screens/onboarding-step-2.png"><img src="docs/screens/onboarding-step-2.png" width="320" /></a> |
+| **Onboarding — Step 3** | <a href="docs/screens/onboarding-step-3.png"><img src="docs/screens/onboarding-step-3.png" width="320" /></a> |
+
+Before starting, make sure you have:
+
+- Node.js 20+
+- npm
+- Docker & Docker Compose
+- Git
+
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/AnassEREKYSY/RaiseUp.git
+cd RaiseUp
+```
+
+### 2. Setup the backend (API)
+
+```bash
+cd server
+npm install
+npm run prisma:generate
+```
+
+Create a .env file in the /server folder:
+```bash
+DATABASE_URL="postgresql://postgres:password@localhost:5432/raiseup"
+JWT_SECRET="your_secret_key"
+PORT=4000
+```
+
+Run the backend locally:
+```bash
+npm run dev
+```
+
+### 3. Setup the frontend (Angular)
+
+```bash
+cd client
+npm install
+```
+
+Update your src/environments/environment.ts:
+```bash
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:4000/api'
+};
+```
+
+To run locally:
+```bash
+npm run start
+```
+
+### 4. Run the tests 
+
+Unit tests (Jest):
+```bash
+cd server
+npm test
+```
+
+E2E tests (Playwright):
+```bash
+cd client/e2e
+npx playwright test
+```
+
+### 5. Deployment (CI/CD)
+
+Deployment pipeline defined in .github/workflows/ci.yml
+
+- Includes:
+
+- Linting & testing
+
+- Build API & client images
+
+- Push to GitHub Container Registry
+
+- SSH deploy to OVH VPS
+
+
+## Creator 
+
+| Name | Role | Contact |
+|------|------|----------|
+| **Anass EREKYSY** | Full-Stack Developer / DevOps / QA | [GitHub](https://github.com/AnassEREKYSY) / [LinkedIn](https://www.linkedin.com/in/anass-erekysy-5a8939204/) |

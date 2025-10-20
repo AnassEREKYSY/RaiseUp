@@ -32,6 +32,7 @@ export class ProfileComponent implements OnInit {
   editMode = false;
   editForm!: FormGroup;
   previewUrl: string | ArrayBuffer | null = null;
+  avatarError = false;
 
   constructor(
     private fb: FormBuilder,
@@ -42,12 +43,21 @@ export class ProfileComponent implements OnInit {
     private router: Router
   ) {}
 
+  get avatarSrc(): string | null {
+    const p = this.previewUrl;
+    if (typeof p === 'string' && p) return p;
+    if (this.user?.avatarUrl) return this.user.avatarUrl;
+    return null;
+  }
+
   ngOnInit() {
     this.user = this.auth.currentUser;
     if (!this.user) return;
 
     this.role = this.user.role;
     const profileId = this.user.profileId ?? null;
+
+    this.avatarError = !this.avatarSrc;
 
     if (profileId) {
       this.loadByProfileId(profileId);
@@ -144,14 +154,26 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  toggleEdit() { this.editMode = !this.editMode; if (!this.editMode) this.previewUrl = null; }
+  toggleEdit() {
+    this.editMode = !this.editMode;
+    if (!this.editMode) this.previewUrl = null;
+    this.avatarError = !this.avatarSrc;
+  }
 
   onFileSelected(e: Event) {
     const file = (e.target as HTMLInputElement).files?.[0];
     if (!file) return;
+    this.avatarError = false;
     const reader = new FileReader();
-    reader.onload = () => (this.previewUrl = reader.result);
+    reader.onload = () => {
+      this.previewUrl = reader.result;
+      this.avatarError = !this.avatarSrc;
+    };
     reader.readAsDataURL(file);
+  }
+
+  onAvatarError() {
+    this.avatarError = true;
   }
 
   saveChanges() {
@@ -160,12 +182,12 @@ export class ProfileComponent implements OnInit {
 
     if (this.role === 'STARTUP' && this.startupProfile) {
       this.startupService.update(this.startupProfile.id, data).subscribe({
-        next: (res) => { this.startupProfile = res as StartupProfile; this.editMode = false; },
+        next: (res) => { this.startupProfile = res as StartupProfile; this.editMode = false; this.avatarError = !this.avatarSrc; },
         error: console.error
       });
     } else if (this.role === 'INVESTOR' && this.investorProfile) {
       this.investorService.update(this.investorProfile.id, data).subscribe({
-        next: (res) => { this.investorProfile = res as InvestorProfile; this.editMode = false; },
+        next: (res) => { this.investorProfile = res as InvestorProfile; this.editMode = false; this.avatarError = !this.avatarSrc; },
         error: console.error
       });
     }

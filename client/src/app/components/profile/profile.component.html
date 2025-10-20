@@ -6,11 +6,25 @@
 
     <section class="card avatar-card">
       <div class="avatar-ring">
-        <img
-          [src]="previewUrl || user.avatarUrl || 'assets/default-user.jpg'"
-          alt="Profile"
-          class="avatar"
-        />
+        <ng-container *ngIf="!avatarError && avatarSrc; else iconAvatar">
+          <img
+            [src]="avatarSrc!"
+            alt="Profile"
+            class="avatar"
+            (error)="onAvatarError()"
+            loading="lazy"
+            decoding="async"
+          />
+        </ng-container>
+
+        <ng-template #iconAvatar>
+          <div class="avatar icon-avatar" [class.startup]="role === 'STARTUP'" [class.investor]="role === 'INVESTOR'">
+            <mat-icon aria-hidden="true">
+              {{ role === 'STARTUP' ? 'rocket_launch' : (role === 'INVESTOR' ? 'business' : 'person') }}
+            </mat-icon>
+          </div>
+        </ng-template>
+
         <label *ngIf="editMode" class="camera" aria-label="Upload avatar">
           <input type="file" accept="image/*" (change)="onFileSelected($event)" />
           <mat-icon>photo_camera</mat-icon>
