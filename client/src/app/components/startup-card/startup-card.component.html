@@ -1,9 +1,19 @@
 <div class="card" (click)="openDetails()">
   <div class="image-container">
     <img
-      [src]="user.avatarUrl || 'assets/default-startup.jpg'"
-      alt="Startup Logo"
+      *ngIf="!imageError && !!user?.avatarUrl; else iconFallback"
+      [src]="user.avatarUrl!"
+      alt="Startup logo"
+      (error)="onImgError()"
+      loading="lazy"
+      decoding="async"
     />
+
+    <ng-template #iconFallback>
+      <div class="icon-fallback">
+        <mat-icon>rocket_launch</mat-icon>
+      </div>
+    </ng-template>
 
     <button class="message-btn" (click)="openChat(); $event.stopPropagation()">
       <mat-icon>chat_bubble_outline</mat-icon>

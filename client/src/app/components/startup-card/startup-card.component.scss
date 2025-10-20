@@ -6,13 +6,10 @@
   overflow: hidden;
   background: #fff;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  transition: box-shadow 0.3s ease, transform 0.2s ease;
+  transition: box-shadow .3s ease, transform .2s ease;
   cursor: pointer;
 
-  &:hover {
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15);
-    transform: none;
-  }
+  &:hover { box-shadow: 0 10px 15px rgba(0,0,0,.15); transform: none; }
 
   .image-container {
     position: relative;
@@ -27,38 +24,38 @@
       display: block;
     }
 
+    .icon-fallback {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      background: #ecfeff;
+      mat-icon {
+        font-size: 56px;
+        width: 56px;
+        height: 56px;
+        color: var(--primary);
+      }
+    }
+
     .heart-btn,
     .message-btn {
       position: absolute;
       top: 10px;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255,255,255,.9);
       border: none;
       border-radius: 50%;
       padding: 6px;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: all .2s ease;
       z-index: 2;
 
-      mat-icon {
-        color: var(--primary);
-        font-size: 22px;
-      }
-
-      &:hover {
-        background: var(--primary);
-        mat-icon {
-          color: white;
-        }
-      }
+      mat-icon { color: var(--primary); font-size: 22px; }
+      &:hover { background: var(--primary); mat-icon { color: #fff; } }
     }
 
-    .message-btn {
-      left: 10px;
-    }
-
-    .heart-btn {
-      right: 10px;
-    }
+    .message-btn { left: 10px; }
+    .heart-btn { right: 10px; }
   }
 
   .card-content {
@@ -68,28 +65,12 @@
     flex-direction: column;
     justify-content: center;
 
-    h3 {
-      margin: 0 0 8px 0;
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text);
-    }
+    h3 { margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: var(--text); }
 
     .info-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: 14px;
-
-      .stage {
-        color: var(--muted);
-        font-weight: 500;
-      }
-
-      .funding {
-        color: var(--text);
-        font-weight: 500;
-      }
+      display: flex; justify-content: space-between; align-items: center; font-size: 14px;
+      .stage { color: var(--muted); font-weight: 500; }
+      .funding { color: var(--text); font-weight: 500; }
     }
   }
 }

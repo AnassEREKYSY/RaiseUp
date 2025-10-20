@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIcon } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -18,11 +18,12 @@ import { SnackMatchComponent } from '../snack-match/snack-match.component';
   templateUrl: './startup-card.component.html',
   styleUrls: ['./startup-card.component.scss']
 })
-export class StartupCardComponent {
+export class StartupCardComponent implements OnChanges{
   @Input() user!: User;
   @Input() profile!: StartupProfile;
   liked = false;
   match?: MatchDto;
+  imageError = false;
 
   constructor(
     private router: Router,
@@ -30,6 +31,10 @@ export class StartupCardComponent {
     private matches: MatchesService,
     private snack: MatSnackBar
   ) {}
+
+  ngOnChanges() {
+    this.imageError = false;
+  }
 
   toggleLike() {
     if (this.liked) return;
@@ -84,5 +89,9 @@ export class StartupCardComponent {
       panelClass: 'chat-dialog-panel',
       width: '760px'
     });
+  }
+
+  onImgError() {
+    this.imageError = true;
   }
 }

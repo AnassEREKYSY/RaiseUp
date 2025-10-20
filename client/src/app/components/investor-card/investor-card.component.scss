@@ -9,9 +9,7 @@
   transition: box-shadow 0.3s ease;
   cursor: pointer;
 
-  &:hover {
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15);
-  }
+  &:hover { box-shadow: 0 10px 15px rgba(0, 0, 0, 0.15); }
 
   .image-container {
     position: relative;
@@ -26,6 +24,20 @@
       display: block;
     }
 
+    .icon-fallback {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      background: #eef2ff;
+      mat-icon {
+        font-size: 56px;
+        width: 56px;
+        height: 56px;
+        color: var(--primary);
+      }
+    }
+
     .heart-btn,
     .message-btn {
       position: absolute;
@@ -37,26 +49,12 @@
       cursor: pointer;
       transition: all 0.2s ease;
 
-      mat-icon {
-        color: var(--primary);
-        font-size: 22px;
-      }
-
-      &:hover {
-        background: var(--primary);
-        mat-icon {
-          color: white;
-        }
-      }
+      mat-icon { color: var(--primary); font-size: 22px; }
+      &:hover { background: var(--primary); mat-icon { color: #fff; } }
     }
 
-    .heart-btn {
-      right: 10px;
-    }
-
-    .message-btn {
-      left: 10px;
-    }
+    .heart-btn { right: 10px; }
+    .message-btn { left: 10px; }
   }
 
   .card-content {
@@ -64,32 +62,11 @@
     padding: 14px 16px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
     gap: 6px;
 
-    h3 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    p {
-      margin: 0;
-      font-size: 13.5px;
-      color: var(--muted);
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-    }
-
-    .industries {
-      font-weight: 900;
-    }
-
-    .stage {
-      color: var(--text);
-      opacity: 0.6;
-    }
+    h3 { margin: 0; font-size: 16px; font-weight: 600; color: var(--text); }
+    p { margin: 0; font-size: 13.5px; color: var(--muted); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .industries { font-weight: 900; }
+    .stage { color: var(--text); opacity: .6; }
   }
 }
