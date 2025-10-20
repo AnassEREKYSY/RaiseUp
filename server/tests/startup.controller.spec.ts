@@ -1,6 +1,6 @@
 import express from 'express';
 import request from 'supertest';
-import { Industry, Stage } from '../src/models/enums';
+import { Industry, Stage } from '../src/enums/enums';
 
 let svc: {
   getAll: jest.Mock;

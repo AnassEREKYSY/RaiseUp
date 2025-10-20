@@ -1,4 +1,4 @@
-import { Industry } from '../models/enums';
+import { Industry } from '../enums/enums';
 
 export interface CreateProjectDto {
   title: string;

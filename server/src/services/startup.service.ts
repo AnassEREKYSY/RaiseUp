@@ -1,6 +1,6 @@
 import { prisma } from '../prisma';
 import { CreateStartupDto, UpdateStartupDto } from '../dtos/startup.dto';
-import { Industry, Stage } from '../models/enums';
+import { Industry, Stage } from '../enums/enums';
 
 export class StartupService {
   async getAll() {

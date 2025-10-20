@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { InvestorController } from '../controllers/investor.controller';
 import { authenticateToken } from '../middlewares/auth.middleware';
 import { authorizeRoles } from '../middlewares/role.middleware';
-import { Role } from '../models/enums';
+import { Role } from '../enums/enums';
 
 const controller = new InvestorController();
 const router = Router();

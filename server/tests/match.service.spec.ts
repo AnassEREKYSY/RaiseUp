@@ -1,4 +1,4 @@
-import { MatchStatus, Role } from '../src/models/enums';
+import { MatchStatus, Role } from '../src/enums/enums';
 
 jest.mock('../src/prisma', () => ({
   prisma: {

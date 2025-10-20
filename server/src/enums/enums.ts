@@ -30,3 +30,9 @@ export enum MatchStatus {
   ACCEPTED = 'ACCEPTED',
   REJECTED = 'REJECTED'
 }
+
+export enum AuthErrorEnum {
+  EMAIL_TAKEN = 'EMAIL_TAKEN',
+  USER_NOT_FOUND = 'USER_NOT_FOUND',
+  WRONG_PASSWORD = 'WRONG_PASSWORD'
+}

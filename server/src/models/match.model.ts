@@ -1,4 +1,4 @@
-import { MatchStatus } from './enums';
+import { MatchStatus } from '../enums/enums';
 
 export interface Match {
   id: string;

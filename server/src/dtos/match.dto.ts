@@ -1,4 +1,4 @@
-import { MatchStatus } from '../models/enums';
+import { MatchStatus } from '../enums/enums';
 
 export interface CreateMatchDto {
   startupId: string;

@@ -1,4 +1,4 @@
-import { Industry, Stage } from '../models/enums';
+import { Industry, Stage } from '../enums/enums';
 
 export interface CreateInvestorDto {
   companyName?: string;

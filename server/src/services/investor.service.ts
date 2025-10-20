@@ -1,6 +1,6 @@
 import { prisma } from '../prisma';
 import { CreateInvestorDto, UpdateInvestorDto } from '../dtos/investor.dto';
-import { Industry, Stage } from '../models/enums';
+import { Industry, Stage } from '../enums/enums';
 
 export class InvestorService {
   async getAll() {

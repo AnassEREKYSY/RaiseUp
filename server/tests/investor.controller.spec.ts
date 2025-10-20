@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from 'express';
 import request from 'supertest';
 import { prisma } from '../src/prisma';
 import { InvestorController } from '../src/controllers/investor.controller';
-import { Industry, Stage } from '../src/models/enums';
+import { Industry, Stage } from '../src/enums/enums';
 
 jest.mock('../src/prisma', () => ({
   prisma: {

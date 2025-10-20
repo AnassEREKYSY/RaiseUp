@@ -4,7 +4,7 @@ import { prisma } from '../src/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import authRouter from '../src/routes/auth.routes';
-import { Role } from '../src/models/enums';
+import { Role } from '../src/enums/enums';
 
 jest.mock('../src/prisma', () => ({
   prisma: { user: { findUnique: jest.fn(), create: jest.fn() } },
@@ -53,15 +53,18 @@ describe('AuthController + routes', () => {
       });
     });
 
-    it('400 on duplicate email', async () => {
+    it('409 on duplicate email with structured error', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({ id: 'exists' });
 
       const res = await request(app)
         .post('/auth/register')
         .send({ email: 'a@b.com', password: 'secret', fullName: 'John', role: Role.STARTUP });
 
-      expect(res.status).toBe(400);
-      expect(res.body.error).toBe('Email already registered');
+      expect(res.status).toBe(409);
+      expect(res.body.error).toEqual({
+        code: 'EMAIL_TAKEN',
+        message: 'This email is already registered.',
+      });
     });
   });
 
@@ -94,18 +97,21 @@ describe('AuthController + routes', () => {
       });
     });
 
-    it('401 on invalid credentials (no user)', async () => {
+    it('404 when user not found with structured error', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
 
       const res = await request(app)
         .post('/auth/login')
         .send({ email: 'no@no.com', password: 'pw' });
 
-      expect(res.status).toBe(401);
-      expect(res.body.error).toBe('Invalid credentials');
+      expect(res.status).toBe(404);
+      expect(res.body.error).toEqual({
+        code: 'USER_NOT_FOUND',
+        message: 'No account found with this email.',
+      });
     });
 
-    it('401 on invalid credentials (wrong password)', async () => {
+    it('401 when wrong password with structured error', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue({
         id: 'u1',
         email: 'a@b.com',
@@ -122,7 +128,10 @@ describe('AuthController + routes', () => {
         .send({ email: 'a@b.com', password: 'bad' });
 
       expect(res.status).toBe(401);
-      expect(res.body.error).toBe('Invalid credentials');
+      expect(res.body.error).toEqual({
+        code: 'WRONG_PASSWORD',
+        message: 'Incorrect password.',
+      });
     });
   });
 });

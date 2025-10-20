@@ -1,5 +1,5 @@
 import { AuthService } from '../src/services/auth.service';
-import { Role } from '../src/models/enums';
+import { Role } from '../src/enums/enums';
 import { prisma } from '../src/prisma';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -16,6 +16,7 @@ describe('AuthService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    process.env.JWT_SECRET = 'test_secret';
   });
 
   describe('register', () => {
@@ -63,7 +64,7 @@ describe('AuthService', () => {
           fullName: 'John',
           role: Role.STARTUP,
         })
-      ).rejects.toThrow('Email already registered');
+      ).rejects.toThrow('This email is already registered.');
     });
   });
 
@@ -122,17 +123,17 @@ describe('AuthService', () => {
       expect(res.user.hasProfile).toBe(true);
     });
 
-    it('throws on missing user', async () => {
+    it('throws on missing user with specific message', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
       await expect(service.login({ email: 'no@no.com', password: 'pw' }))
-        .rejects.toThrow('Invalid credentials');
+        .rejects.toThrow('No account found with this email.');
     });
 
-    it('throws on invalid password', async () => {
+    it('throws on invalid password with specific message', async () => {
       (prisma.user.findUnique as jest.Mock).mockResolvedValue(baseUser);
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
       await expect(service.login({ email: 'a@b.com', password: 'bad' }))
-        .rejects.toThrow('Invalid credentials');
+        .rejects.toThrow('Incorrect password.');
     });
   });
 });

@@ -1,6 +1,6 @@
 import { prisma } from '../prisma';
 import { CreateMatchDto, UpdateMatchStatusDto } from '../dtos/match.dto';
-import { MatchStatus, Role } from '../models/enums';
+import { MatchStatus, Role } from '../enums/enums';
 import { NotificationService } from './notification.service';
 import { GetOrCreateArgs } from '../types/getOrCreateArgs.type';
 import { DecisionArgs } from '../types/desicionArgs.type';

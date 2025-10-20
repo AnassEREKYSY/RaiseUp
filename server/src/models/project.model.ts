@@ -1,4 +1,4 @@
-import { Industry } from './enums';
+import { Industry } from '../enums/enums';
 
 export interface Project {
   id: string;

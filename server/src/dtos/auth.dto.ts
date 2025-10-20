@@ -1,4 +1,4 @@
-import { Role } from '../models/enums';
+import { Role } from '../enums/enums';
 
 export interface RegisterDto {
   email: string;

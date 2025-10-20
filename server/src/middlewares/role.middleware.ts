@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { Role } from '../models/enums';
+import { Role } from '../enums/enums';
 
 export const authorizeRoles = (...roles: Role[]) => {
   return (req: Request, res: Response, next: NextFunction) => {

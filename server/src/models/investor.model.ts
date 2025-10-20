@@ -1,4 +1,4 @@
-import { Industry, Stage } from './enums';
+import { Industry, Stage } from '../enums/enums';
 
 export interface InvestorProfile {
   id: string;

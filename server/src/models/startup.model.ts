@@ -1,4 +1,4 @@
-import { Industry, Stage } from './enums';
+import { Industry, Stage } from '../enums/enums';
 
 export interface StartupProfile {
   id: string;

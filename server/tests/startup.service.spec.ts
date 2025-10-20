@@ -1,5 +1,5 @@
 import { StartupService } from '../src/services/startup.service';
-import { Industry, Stage } from '../src/models/enums';
+import { Industry, Stage } from '../src/enums/enums';
 import { prisma } from '../src/prisma';
 
 jest.mock('../src/prisma', () => ({

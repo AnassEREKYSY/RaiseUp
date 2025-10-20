@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { StartupController } from '../controllers/startup.controller';
 import { authenticateToken } from '../middlewares/auth.middleware';
 import { authorizeRoles } from '../middlewares/role.middleware';
-import { Role } from '../models/enums';
+import { Role } from '../enums/enums';
 
 const controller = new StartupController();
 const router = Router();
