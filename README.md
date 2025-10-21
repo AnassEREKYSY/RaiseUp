@@ -38,17 +38,17 @@ RaiseUp is a matchmaking platform that connects startups seeking funding with in
 ## Main Interfaces
 | Interface | Screenshot |
 |-----------|------------|
-| Login | ![Login](docs/screens/login.png) |
-| Register | ![Register](docs/screens/register.png) |
-| Dashboard | ![Dashboard](docs/screens/dashboard.png) |
-| Profile | ![Profile](docs/screens/profile.png) |
-| Investor — Details | ![Investor Details](docs/screens/investor-details.png) |
-| Startup — Details (1) | ![Startup Details 1](docs/screens/startup-details-1.png) |
-| Startup — Details (2) | ![Startup Details 2](docs/screens/startup-details-2.png) |
-| Chat | ![Chat](docs/screens/chat-dialog.png) |
-| Onboarding — Step 1 | ![Onboarding Step 1](docs/screens/onboarding-step-1.png) |
-| Onboarding — Step 2 | ![Onboarding Step 2](docs/screens/onboarding-step-2.png) |
-| Onboarding — Step 3 | ![Onboarding Step 3](docs/screens/onboarding-step-3.png) |
+| Login | ![Login](docs/login.png) |
+| Register | ![Register](docs/register.png) |
+| Dashboard | ![Dashboard](docs/dashboard.png) |
+| Profile | ![Profile](docs/profile.png) |
+| Investor — Details | ![Investor Details](docs/investor-details.png) |
+| Startup — Details (1) | ![Startup Details 1](docs/startup-details-1.png) |
+| Startup — Details (2) | ![Startup Details 2](docs/startup-details-2.png) |
+| Chat | ![Chat](docs/chat-dialog.png) |
+| Onboarding — Step 1 | ![Onboarding Step 1](docs/onboarding-step-1.png) |
+| Onboarding — Step 2 | ![Onboarding Step 2](docs/onboarding-step-2.png) |
+| Onboarding — Step 3 | ![Onboarding Step 3](docs/onboarding-step-3.png) |
 
 
 ## Prerequisites
