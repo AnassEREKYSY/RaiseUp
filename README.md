@@ -68,3 +68,66 @@ Run the API:
 npm run dev
 ```
 
+### 3. Setup the frontend (Angular)
+
+```bash
+cd client
+npm install
+```
+
+Update your src/environments/environment.ts:
+```bash
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:4000/api'
+};
+```
+
+To run locally:
+```bash
+npm run start
+```
+
+### 4. Run the tests 
+
+Unit tests (Jest):
+```bash
+cd server
+npm run test
+npm run test:cov
+```
+
+Load tests (Artillery):
+```bash
+cd server
+npm run load:test
+npm run load:report
+```
+
+E2E tests (Playwright):
+```bash
+cd client
+npm run e2e:test
+```
+
+### 5. Deployment (CI/CD)
+
+Deployment pipeline defined in .github/workflows/ci.yml
+
+- Includes:
+
+- Linting & testing
+
+- Build API & client images
+
+- Push to GitHub Container Registry
+
+- SSH deploy to OVH VPS
+
+
+## Creator 
+
+| Name | Role | Contact |
+|------|------|----------|
+| **Anass EREKYSY** | Full-Stack Developer / DevOps / QA | [GitHub](https://github.com/AnassEREKYSY) / [LinkedIn](https://www.linkedin.com/in/anass-erekysy-5a8939204/) |
+
