@@ -4,11 +4,27 @@
 RaiseUp is a matchmaking platform that connects startups seeking funding with investors looking for opportunities. The application provides role-based experiences, a guided three-step onboarding, a card-based directory with search and filtering, a matching flow, and messaging once there is mutual interest. The frontend is built with Angular 19. The backend uses Node.js, Express, and Prisma with PostgreSQL. The project includes unit, end-to-end, and load testing and can be run locally or via Docker, with CI/CD to an OVH VPS.
 
 ## Tech Stack
-- Frontend: Angular 19 (standalone components, Angular Material)
-- Backend: Node.js, Express, Prisma
-- Database: PostgreSQL
-- Testing: Jest (unit), Playwright (E2E), Artillery (load)
-- DevOps: Docker, Docker Compose, GitHub Actions, OVH VPS
+**Frontend**  
+![Angular](https://img.shields.io/badge/Angular-19-EA4335?logo=angular&logoColor=white)
+![Angular Material](https://img.shields.io/badge/Angular%20Material-UI-757575?logo=angular&logoColor=white)
+
+**Backend**  
+![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=nodedotjs&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma&logoColor=white)
+
+**Database**  
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-DB-336791?logo=postgresql&logoColor=white)
+
+**Testing**  
+![Jest](https://img.shields.io/badge/Jest-Unit-C21325?logo=jest&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-E2E-2EAD33?logo=microsoftplaywright&logoColor=white)
+![Artillery](https://img.shields.io/badge/Artillery-Load-F9A03C?logo=artillery&logoColor=white)
+
+**DevOps**  
+![Docker](https://img.shields.io/badge/Docker-Container-2496ED?logo=docker&logoColor=white)
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088FF?logo=githubactions&logoColor=white)
+![OVHcloud](https://img.shields.io/badge/OVHcloud-Deploy-123F6D?logo=ovh&logoColor=white)
+
 
 ## Features
 - Authentication with role-based access (Investor / Startup)
