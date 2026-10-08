@@ -1,149 +1,62 @@
-# RaiseUp — Investor & Startup Matchmaking Platform
+# RaiseUp
 
-## Overview
-RaiseUp is a matchmaking platform that connects startups seeking funding with investors looking for opportunities. The application provides role-based experiences, a guided three-step onboarding, a card-based directory with search and filtering, a matching flow, and messaging once there is mutual interest. The frontend is built with Angular 19. The backend uses Node.js, Express, and Prisma with PostgreSQL. The project includes unit, end-to-end, and load testing and can be run locally or via Docker, with CI/CD to an OVH VPS.
+RaiseUp connects startups that are raising money with investors who fit them.
 
-## Tech Stack
-**Frontend**  
-![Angular](https://img.shields.io/badge/Angular-19-EA4335?logo=angular&logoColor=white)
-![Angular Material](https://img.shields.io/badge/Angular%20Material-UI-757575?logo=angular&logoColor=white)
-
-**Backend**  
-![Node.js](https://img.shields.io/badge/Node.js-Express-339933?logo=nodedotjs&logoColor=white)
-![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748?logo=prisma&logoColor=white)
-
-**Database**  
-![PostgreSQL](https://img.shields.io/badge/PostgreSQL-DB-336791?logo=postgresql&logoColor=white)
-
-**Testing**  
-![Jest](https://img.shields.io/badge/Jest-Unit-C21325?logo=jest&logoColor=white)
-![Playwright](https://img.shields.io/badge/Playwright-E2E-2EAD33?logo=microsoftplaywright&logoColor=white)
-![Artillery](https://img.shields.io/badge/Artillery-Load-F9A03C?logo=artillery&logoColor=white)
-
-**DevOps**  
-![Docker](https://img.shields.io/badge/Docker-Container-2496ED?logo=docker&logoColor=white)
-![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-CI%2FCD-2088FF?logo=githubactions&logoColor=white)
-![OVHcloud](https://img.shields.io/badge/OVHcloud-Deploy-123F6D?logo=ovh&logoColor=white)
-
+Live: https://raiseup.anasserekysy.com
 
 ## Features
-- Authentication with role-based access (Investor / Startup)
-- Three-step onboarding for profile completion
-- Matching flow and chat after acceptance
-- Search and filtering by industry, stage, and funding
-- Responsive, lazy-loaded card grid
-- Notifications for match status and actions
-- CI/CD pipeline with tests and container build
 
-## Main Interfaces
-| Interface | Screenshot |
-|-----------|------------|
-| Login | ![Login](docs/login.png) |
-| Register | ![Register](docs/register.png) |
-| Dashboard | ![Dashboard](docs/dashboard.png) |
-| Profile | ![Profile](docs/profile.png) |
-| Investor — Details | ![Investor Details](docs/investor-details.png) |
-| Startup — Details (1) | ![Startup Details 1](docs/startup-details-1.png) |
-| Startup — Details (2) | ![Startup Details 2](docs/startup-details-2.png) |
-| Chat | ![Chat](docs/chat-dialog.png) |
-| Onboarding — Step 1 | ![Onboarding Step 1](docs/onboarding-step-1.png) |
-| Onboarding — Step 2 | ![Onboarding Step 2](docs/onboarding-step-2.png) |
-| Onboarding — Step 3 | ![Onboarding Step 3](docs/onboarding-step-3.png) |
+- **Match score** on every profile (0-100) from industry, stage, ticket size and country, with the reasons shown. "Recommended for you" lists the best fits you are not connected with yet.
+- **Discover** startups or investors with search, filters and sorting by match.
+- **Connections**: request with a short note, accept or decline. Messaging opens once both sides agree.
+- **Real-time inbox**: conversations, unread counts, live messages (Socket.IO), and **meeting requests** with up to three proposed times.
+- **Deal pipeline** for investors: a private board (Interested, Contacted, Meeting, Due diligence, Invested, Passed) with drag and drop and notes.
+- **Analytics**: profile views per day, who looks at you, requests and reply time; for investors, pipeline and deal flow by industry.
+- **Profiles** with the raise (amount, committed, progress), key numbers, projects; guided onboarding in three steps.
+- Notifications for requests, answers and meetings.
 
+## Stack
 
-## Prerequisites
-- Node.js 20+
-- npm
-- Docker and Docker Compose
-- Git
-- Local PostgreSQL or Dockerized PostgreSQL
+| Part | Tech |
+|---|---|
+| Client | Angular 19 (standalone, signals), Tailwind CSS, Angular CDK drag and drop, Socket.IO client, Playwright |
+| API | Node.js 20, Express 5, Prisma 6, PostgreSQL 16, Socket.IO, Zod validation, JWT, Jest + Supertest |
+| Delivery | Docker, GitHub Actions, GHCR, OVH VM behind an Nginx reverse proxy |
 
-## Setup
-
-### 1. Clone
-```bash
-git clone https://github.com/AnassEREKYSY/RaiseUp.git
-cd RaiseUp
 ```
-### 2. Backend (API)
+client/   Angular app, served by Nginx (proxies /api and the socket to the API)
+server/   Express API: auth, profiles, directory + match score, connections, inbox, pipeline, analytics
+deploy/   docker-compose.prod.yml, deploy.sh and the reverse-proxy site used on the VM
+```
+
+## Run locally
 
 ```bash
+# API
 cd server
+cp .env.example .env          # DATABASE_URL, JWT_SECRET
 npm install
-npm run prisma:generate
-```
+npx prisma migrate deploy
+npm run seed:demo             # optional: 8 startups, 4 investors (password demo-pass-123)
+npm run dev                   # http://localhost:4000
 
-Create server/.env:
-```bash
-DATABASE_URL="postgresql://postgres:password@localhost:5432/raiseup"
-JWT_SECRET="your_secret_key"
-PORT=4000
-```
-Run the API:
-```bash
-npm run dev
-```
-
-### 3. Setup the frontend (Angular)
-
-```bash
+# Client
 cd client
 npm install
+npm start                     # http://localhost:4200
 ```
 
-Update your src/environments/environment.ts:
+Demo accounts after `seed:demo`: `anna@seedlane.demo` (investor), `yusuf@visionqa.demo` (startup).
+
+## Tests
+
 ```bash
-export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:4000/api'
-};
+cd server && npm test         # match score, analytics, API rules (auth, privacy of conversations, roles)
+cd client && npm run e2e      # Playwright with a mocked API
 ```
 
-To run locally:
-```bash
-npm run start
-```
+The pipeline also upgrades a database created by the previous version (with data in it) and checks that the migrations match `schema.prisma` exactly.
 
-### 4. Run the tests 
+## Deployment
 
-Unit tests (Jest):
-```bash
-cd server
-npm run test
-npm run test:cov
-```
-
-Load tests (Artillery):
-```bash
-cd server
-npm run load:test
-npm run load:report
-```
-
-E2E tests (Playwright):
-```bash
-cd client
-npm run e2e:test
-```
-
-### 5. Deployment (CI/CD)
-
-Deployment pipeline defined in .github/workflows/ci.yml
-
-- Includes:
-
-- Linting & testing
-
-- Build API & client images
-
-- Push to GitHub Container Registry
-
-- SSH deploy to OVH VPS
-
-
-## Creator 
-
-| Name | Role | Contact |
-|------|------|----------|
-| **Anass EREKYSY** | Full-Stack Developer / DevOps / QA | [GitHub](https://github.com/AnassEREKYSY) / [LinkedIn](https://www.linkedin.com/in/anass-erekysy-5a8939204/) |
-
+Every push to `main` runs the tests, builds both images, pushes them to GHCR and deploys them on the VM. See [DEPLOYMENT.md](DEPLOYMENT.md).

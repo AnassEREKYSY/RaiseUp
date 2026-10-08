@@ -1,47 +1,27 @@
 import { Routes } from '@angular/router';
-import { LoginComponent } from './components/login/login.component';
-import { RegisterComponent } from './components/register/register.component';
-import { OnboardingComponent } from './components/onboarding/onboarding.component';
-import { MainLayoutComponent } from './components/main-layout/main-layout.component';
-import { DashboardComponent } from './components/dashboard/dashboard.component';
-import { onboardingGuard } from './guards/onboarding.guard';
-import { ProfileComponent } from './components/profile/profile.component';
+import { appGuard, guestGuard, investorGuard, onboardingGuard } from './core/http';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
-  { path: 'login', component: LoginComponent },
-  { path: 'register', component: RegisterComponent },
-  { path: 'onboarding', component: OnboardingComponent },
-
+  { path: 'login', title: 'Sign in · RaiseUp', canActivate: [guestGuard], data: { mode: 'login' }, loadComponent: () => import('./pages/auth.page').then(m => m.AuthPage) },
+  { path: 'register', title: 'Create account · RaiseUp', canActivate: [guestGuard], data: { mode: 'register' }, loadComponent: () => import('./pages/auth.page').then(m => m.AuthPage) },
+  { path: 'onboarding', title: 'Set up your profile · RaiseUp', canActivate: [onboardingGuard], loadComponent: () => import('./pages/onboarding.page').then(m => m.OnboardingPage) },
   {
     path: '',
-    component: MainLayoutComponent,
+    canActivate: [appGuard],
+    loadComponent: () => import('./shell.component').then(m => m.ShellComponent),
     children: [
-      {
-        path: 'dashboard',
-        component: DashboardComponent,
-        canActivate: [onboardingGuard]
-      },
-      {
-        path: 'startups/:id',
-        loadComponent: () =>
-          import('./components/startup-details/startup-details.component').then(
-            (m) => m.StartupDetailsComponent
-          )
-      },
-      {
-        path: 'investors/:id',
-        loadComponent: () =>
-          import('./components/investor-details/investor-details.component').then(
-            (m) => m.InvestorDetailsComponent
-          )
-      },
-      {
-        path: 'profile',
-        component: ProfileComponent
-      }
-    ]
+      { path: '', title: 'Home · RaiseUp', loadComponent: () => import('./pages/home.page').then(m => m.HomePage) },
+      { path: 'discover', title: 'Discover · RaiseUp', loadComponent: () => import('./pages/discover.page').then(m => m.DiscoverPage) },
+      { path: 'startups/:id', loadComponent: () => import('./pages/startup.page').then(m => m.StartupPage) },
+      { path: 'investors/:id', loadComponent: () => import('./pages/investor.page').then(m => m.InvestorPage) },
+      { path: 'inbox', title: 'Inbox · RaiseUp', loadComponent: () => import('./pages/inbox.page').then(m => m.InboxPage) },
+      { path: 'inbox/:id', title: 'Inbox · RaiseUp', loadComponent: () => import('./pages/inbox.page').then(m => m.InboxPage) },
+      { path: 'pipeline', title: 'Pipeline · RaiseUp', canActivate: [investorGuard], loadComponent: () => import('./pages/pipeline.page').then(m => m.PipelinePage) },
+      { path: 'analytics', title: 'Analytics · RaiseUp', loadComponent: () => import('./pages/analytics.page').then(m => m.AnalyticsPage) },
+      { path: 'profile', title: 'Your profile · RaiseUp', loadComponent: () => import('./pages/profile.page').then(m => m.ProfilePage) },
+      // Old URLs
+      { path: 'dashboard', redirectTo: '' },
+      { path: '**', title: 'Not found · RaiseUp', loadComponent: () => import('./pages/not-found.page').then(m => m.NotFoundPage) },
+    ],
   },
-
-  { path: '**', redirectTo: 'login' }
 ];

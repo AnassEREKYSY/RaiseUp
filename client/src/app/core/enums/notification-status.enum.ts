@@ -1,6 +1,0 @@
-export enum NotificationStatus {
-    MATCH_REQUEST = 'MATCH_REQUEST',
-    MATCH_ACCEPTED = 'MATCH_ACCEPTED',
-    MATCH_REJECTED = 'MATCH_REJECTED',
-    MESSAGE = 'MESSAGE'
-}

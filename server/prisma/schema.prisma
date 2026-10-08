@@ -65,6 +65,9 @@ model User {
   sentMatches     Match[]          @relation("StartupMatches")
   receivedMatches Match[]          @relation("InvestorMatches")
   notifications   Notification[]
+  pipelineItems   PipelineItem[]
+  profileViews    ProfileView[]
+  readMarks       MatchRead[]
 }
 
 model StartupProfile {
@@ -81,9 +84,18 @@ model StartupProfile {
   traction      String?
   pitchDeckUrl  String?
   createdAt     DateTime @default(now())
+  // Added in v2
+  tagline       String?
+  amountRaised  Float?
+  foundedYear   Int?
+  monthlyRevenue Float?
+  monthlyGrowth Float? // percent
+  customers     Int?
+  updatedAt     DateTime @default(now()) @updatedAt
 
-  user     User      @relation(fields: [userId], references: [id])
-  projects Project[]
+  user          User           @relation(fields: [userId], references: [id])
+  projects      Project[]
+  pipelineItems PipelineItem[]
 }
 
 model InvestorProfile {
@@ -97,6 +109,12 @@ model InvestorProfile {
   website         String?
   bio             String?
   createdAt       DateTime   @default(now())
+  // Added in v2
+  investorType    String? // ANGEL | VC | CORPORATE | FAMILY_OFFICE | ACCELERATOR
+  minTicket       Float?
+  maxTicket       Float?
+  portfolioCount  Int?
+  updatedAt       DateTime   @default(now()) @updatedAt
 
   user    User    @relation(fields: [userId], references: [id])
   matches Match[] @relation("InvestorProfileMatches")
@@ -123,12 +141,20 @@ model Match {
   investorProfileId String?
   status            MatchStatus @default(PENDING)
   createdAt         DateTime    @default(now())
+  // Added in v2
+  requestedById     String?
+  respondedAt       DateTime?
+  lastMessageAt     DateTime?
 
   startup         User             @relation("StartupMatches", fields: [startupId], references: [id], map: "fk_match_startup_user")
   investor        User             @relation("InvestorMatches", fields: [investorId], references: [id], map: "fk_match_investor_user")
   investorProfile InvestorProfile? @relation("InvestorProfileMatches", fields: [investorProfileId], references: [id], map: "fk_match_investor_profile")
   project         Project?         @relation(fields: [projectId], references: [id])
   messages        Message[]
+  reads           MatchRead[]
+
+  @@index([startupId])
+  @@index([investorId])
 }
 
 model Message {
@@ -137,9 +163,14 @@ model Message {
   senderId  String
   content   String
   createdAt DateTime @default(now())
+  // Added in v2: TEXT or MEETING (meeting holds { slots: string[], note?, acceptedSlot?, status })
+  kind      String   @default("TEXT")
+  meta      Json?
 
   match  Match @relation(fields: [matchId], references: [id])
   sender User  @relation("UserMessages", fields: [senderId], references: [id])
+
+  @@index([matchId, createdAt])
 }
 
 model Notification {
@@ -149,6 +180,54 @@ model Notification {
   message   String
   isRead    Boolean  @default(false)
   createdAt DateTime @default(now())
+  link      String? // added in v2: where the notification leads in the app
 
   user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, createdAt])
+}
+
+// ─── Added in v2 ───────────────────────────────────────────────────────────
+
+// Last time a participant opened a conversation (drives unread counts).
+model MatchRead {
+  matchId String
+  userId  String
+  readAt  DateTime @default(now())
+
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([matchId, userId])
+}
+
+// An investor's private deal board.
+model PipelineItem {
+  id        String   @id @default(cuid())
+  userId    String
+  startupId String
+  stage     String   @default("INTERESTED") // INTERESTED | CONTACTED | MEETING | DUE_DILIGENCE | INVESTED | PASSED
+  notes     String?
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  user    User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startup StartupProfile @relation(fields: [startupId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, startupId])
+  @@index([userId, stage])
+}
+
+// One row per profile visit (deduplicated per viewer and day in code).
+model ProfileView {
+  id          String   @id @default(cuid())
+  viewerId    String
+  profileType String // STARTUP | INVESTOR
+  profileId   String
+  createdAt   DateTime @default(now())
+
+  viewer User @relation(fields: [viewerId], references: [id], onDelete: Cascade)
+
+  @@index([profileType, profileId, createdAt])
 }

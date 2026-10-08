@@ -1,311 +1,153 @@
-name: CI/CD
+name: CI/CD - Test, build, push to GHCR and deploy to OVH
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: raiseup-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
-  packages: write
-
-concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_CLIENT: raiseup-client
-  IMAGE_SERVER: raiseup-server
 
 jobs:
-  unit_and_load_tests:
+  api:
+    name: API - build and tests
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: server } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20, cache: npm, cache-dependency-path: server/package-lock.json }
+      - run: npm ci
+      - run: npx prisma generate
+      - run: npx tsc -p tsconfig.json
+      - run: npm run build
+      - run: npx jest --ci
+
+  migrations:
+    name: Database upgrade keeps existing data
     runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres:16-alpine
-        ports: [ "5432:5432" ]
-        env:
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+        env: { POSTGRES_PASSWORD: postgres, POSTGRES_DB: raiseup }
+        ports: ["5432:5432"]
         options: >-
-          --health-cmd "pg_isready -U $POSTGRES_USER -d $POSTGRES_DB"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 20
+          --health-cmd "pg_isready -U postgres" --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/raiseup?schema=public
+      PGPASSWORD: postgres
+    defaults: { run: { working-directory: server } }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: server/package-lock.json
-      - name: Install server deps
-        working-directory: server
-        run: npm ci
-      - name: Build server
-        working-directory: server
-        run: npx tsc -p tsconfig.build.json
-      - name: Unit tests with coverage
-        working-directory: server
-        env:
-          NODE_ENV: test
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-        run: npx jest --ci --coverage --runInBand --config ./jest.config.ts
-      - name: Upload unit test coverage
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: server-coverage
-          path: server/coverage
-          if-no-files-found: warn
-          retention-days: 14
-      - name: Load test (Artillery)
-        working-directory: server
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        with: { node-version: 20, cache: npm, cache-dependency-path: server/package-lock.json }
+      - run: npm ci
+      - name: Previous version of the database, with data in it
         run: |
-          if [ -f "artillery.yml" ]; then npx artillery run artillery.yml -o load-results.json; fi
-          if [ -d "artillery" ]; then npx artillery run artillery/*.yml -o load-results.json; fi
-          if [ -f "load-results.json" ]; then npx artillery report load-results.json -o load-report.html; fi
-      - name: Upload load test report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: artillery-report
-          path: |
-            server/load-results.json
-            server/load-report.html
-          if-no-files-found: warn
-          retention-days: 14
+          mkdir -p /tmp/old/migrations
+          cp prisma/migrations/migration_lock.toml /tmp/old/migrations/
+          cp -r prisma/migrations/20251007125545_final_schema /tmp/old/migrations/
+          cp prisma/schema.prisma /tmp/old/schema.prisma
+          npx prisma migrate deploy --schema /tmp/old/schema.prisma
+          psql -h localhost -U postgres -d raiseup -v ON_ERROR_STOP=1 <<'SQL'
+          INSERT INTO "User"(id,email,password,"fullName",role,"updatedAt") VALUES ('s','s@x.co','h','S','STARTUP',now()),('i','i@x.co','h','I','INVESTOR',now());
+          INSERT INTO "StartupProfile"(id,"userId","companyName",industry,stage) VALUES ('sp','s','Acme','AI','MVP');
+          INSERT INTO "Match"(id,"startupId","investorId",status) VALUES ('m','s','i','ACCEPTED');
+          INSERT INTO "Message"(id,"matchId","senderId",content) VALUES ('msg','m','i','hello');
+          SQL
+      - name: Apply the new migration exactly like the container does
+        run: npx prisma migrate deploy
+      - name: Existing rows are still there
+        run: |
+          test "$(psql -h localhost -U postgres -d raiseup -tAc "select count(*) from \"Message\" where id='msg' and kind='TEXT'")" = "1"
+          test "$(psql -h localhost -U postgres -d raiseup -tAc "select count(*) from \"StartupProfile\" where id='sp'")" = "1"
+      - name: Migrations match schema.prisma exactly
+        run: |
+          psql -h localhost -U postgres -c 'create database shadow'
+          npx prisma migrate diff --from-migrations prisma/migrations --to-schema-datamodel prisma/schema.prisma \
+            --shadow-database-url postgresql://postgres:postgres@localhost:5432/shadow --exit-code
 
-  e2e_tests:
+  client:
+    name: Client - build and end-to-end tests
     runs-on: ubuntu-latest
-    needs: unit_and_load_tests
+    defaults: { run: { working-directory: client } }
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: client/package-lock.json
+        with: { node-version: 20, cache: npm, cache-dependency-path: client/package-lock.json }
+      - run: npm ci
+      - run: npx ng build --configuration production
+      - run: npx playwright install --with-deps chromium
+      - run: npm run e2e
+        env: { CI: 'true' }
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with: { name: playwright-report, path: client/playwright-report, retention-days: 7 }
 
-      - name: Cache Playwright browsers
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/ms-playwright
-          key: ms-playwright-${{ runner.os }}-chromium-1.48
-
-      - name: Cache Angular build cache
-        uses: actions/cache@v4
-        with:
-          path: client/.angular/cache
-          key: angular-cache-${{ runner.os }}-${{ hashFiles('client/package-lock.json') }}-${{ hashFiles('client/src/**/*') }}
-          restore-keys: |
-            angular-cache-${{ runner.os }}-${{ hashFiles('client/package-lock.json') }}-
-
-      - name: Install client deps
-        working-directory: client
-        run: npm ci
-      - name: Build client (CSR-only CI config)
-        working-directory: client
-        env:
-          NG_CLI_ANALYTICS: 'false'
-        run: npx ng build --configuration ci
-      - name: Install Playwright browsers
-        working-directory: client
-        run: npx playwright install --with-deps
-      - name: Start static server
-        working-directory: client
-        run: |
-          npx -y serve -s dist/client/browser -l 4200 & echo $! > /tmp/web.pid
-      - name: Wait for server
-        run: npx -y wait-on http://localhost:4200
-      - name: Run E2E tests (HTML report)
-        working-directory: client
-        env:
-          CI: true
-        run: npx playwright test -c e2e/playwright.config.ts --reporter=html
-      - name: Stop static server
-        if: always()
-        run: kill $(cat /tmp/web.pid) || true
-      - name: Upload E2E report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: client/playwright-report
-          if-no-files-found: warn
-          retention-days: 14
-
-  docker_build_push:
+  images:
+    name: Docker images
+    needs: [api, migrations, client]
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    needs: [unit_and_load_tests, e2e_tests]
+    permissions: { contents: read, packages: write }
+    strategy:
+      matrix:
+        include:
+          - { name: server, context: ./server }
+          - { name: client, context: ./client }
     steps:
       - uses: actions/checkout@v4
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GHCR_TOKEN }}
-
-      - name: Set image tags
-        id: meta
-        run: |
-          SHA=${GITHUB_SHA::7}
-          echo "sha=${SHA}" >> $GITHUB_OUTPUT
-
-      - name: Compute lowercase owner
-        run: echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
-
       - uses: docker/setup-buildx-action@v3
-
-      - name: Build & push SERVER image
-        uses: docker/build-push-action@v6
+      - uses: docker/login-action@v3
+        with: { registry: ghcr.io, username: '${{ github.actor }}', password: '${{ secrets.GITHUB_TOKEN }}' }
+      - uses: docker/build-push-action@v6
         with:
-          context: ./server
-          file: ./server/Dockerfile
+          context: ${{ matrix.context }}
           push: true
           tags: |
-            ${{ env.REGISTRY }}/${{ env.OWNER_LC }}/${{ env.IMAGE_SERVER }}:latest
-            ${{ env.REGISTRY }}/${{ env.OWNER_LC }}/${{ env.IMAGE_SERVER }}:${{ steps.meta.outputs.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+            ghcr.io/anasserekysy/raiseup-${{ matrix.name }}:latest
+            ghcr.io/anasserekysy/raiseup-${{ matrix.name }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
 
-      - name: Build & push CLIENT image
-        uses: docker/build-push-action@v6
-        with:
-          context: ./client
-          file: ./client/Dockerfile
-          push: true
-          build-args: |
-            NG_BUILD_CONFIG=production-spa
-          tags: |
-            ${{ env.REGISTRY }}/${{ env.OWNER_LC }}/${{ env.IMAGE_CLIENT }}:latest
-            ${{ env.REGISTRY }}/${{ env.OWNER_LC }}/${{ env.IMAGE_CLIENT }}:${{ steps.meta.outputs.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          no-cache: true
-
-  deploy_to_ovh:
+  deploy:
+    name: Deploy to OVH
+    needs: images
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    needs: docker_build_push
     steps:
-      - name: Prepare image names
-        run: |
-          echo "REGISTRY=ghcr.io" >> $GITHUB_ENV
-          echo "OWNER_LC=${GITHUB_REPOSITORY_OWNER,,}" >> $GITHUB_ENV
-          echo "SERVER_IMAGE=${GITHUB_REPOSITORY_OWNER,,}/raiseup-server" >> $GITHUB_ENV
-          echo "CLIENT_IMAGE=${GITHUB_REPOSITORY_OWNER,,}/raiseup-client" >> $GITHUB_ENV
-
-      - name: Deploy to OVH
-        uses: appleboy/ssh-action@v1.0.0
-        env:
-          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
-          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+      - uses: actions/checkout@v4
+      - name: Copy deployment files to the VM
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.OVH_HOST }}
           username: ${{ secrets.OVH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: REGISTRY,OWNER_LC,SERVER_IMAGE,CLIENT_IMAGE,GHCR_TOKEN,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_DB
+          source: deploy/docker-compose.prod.yml,deploy/deploy.sh
+          target: raiseup
+          strip_components: 1
+      - name: Deploy
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GHCR_TOKEN }}
+          POSTGRES_USER: ${{ secrets.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ secrets.POSTGRES_DB }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          CLIENT_BIND: ${{ vars.RAISEUP_CLIENT_BIND }}
+        with:
+          host: ${{ secrets.OVH_HOST }}
+          username: ${{ secrets.OVH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          envs: IMAGE_TAG,GHCR_USER,GHCR_TOKEN,POSTGRES_USER,POSTGRES_PASSWORD,POSTGRES_DB,JWT_SECRET,CLIENT_BIND
+          command_timeout: 15m
           script: |
-            set -euo pipefail
-
-            if ! command -v docker >/dev/null 2>&1; then
-              curl -fsSL https://get.docker.com | sh
-              sudo usermod -aG docker $USER || true
-            fi
-
-            if ! docker compose version >/dev/null 2>&1; then
-              mkdir -p ~/.docker/cli-plugins
-              curl -fsSL "https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o ~/.docker/cli-plugins/docker-compose
-              chmod +x ~/.docker/cli-plugins/docker-compose
-            fi
-
-            APP_DIR="$HOME/raiseup"
-            mkdir -p "$APP_DIR"
-            cd "$APP_DIR"
-
-            echo "$GHCR_TOKEN" | docker login "$REGISTRY" -u "${{ github.actor }}" --password-stdin
-
-            cat > .env.db <<'EOF'
-            POSTGRES_USER=${POSTGRES_USER}
-            POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-            POSTGRES_DB=${POSTGRES_DB}
-            PGADMIN_DEFAULT_EMAIL=admin@example.com
-            PGADMIN_DEFAULT_PASSWORD=admin123
-            DB_PORT=5432
-            PGADMIN_PORT=5050
-            EOF
-
-            cat > .env.server <<'EOF'
-            NODE_ENV=production
-            PORT=4000
-            DATABASE_URL=postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}?schema=public
-            EOF
-
-            cat > docker-compose.yml <<'YML'
-            version: "3.9"
-            services:
-              db:
-                image: postgres:16-alpine
-                restart: unless-stopped
-                env_file: .env.db
-                volumes:
-                  - investor_db_data:/var/lib/postgresql/data
-                healthcheck:
-                  test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
-                  interval: 5s
-                  timeout: 5s
-                  retries: 20
-                networks: [ investor_net ]
-
-              api:
-                image: ${REGISTRY}/${SERVER_IMAGE}:latest
-                env_file: .env.server
-                depends_on:
-                  db:
-                    condition: service_healthy
-                expose:
-                  - "4000"
-                restart: unless-stopped
-                networks: [ investor_net ]
-
-              client:
-                image: ${REGISTRY}/${CLIENT_IMAGE}:latest
-                depends_on:
-                  - api
-                ports:
-                  - "3000:80"
-                restart: unless-stopped
-                networks: [ investor_net ]
-
-              pgadmin:
-                image: dpage/pgadmin4:8
-                env_file: .env.db
-                ports:
-                  - "8081:80"
-                depends_on:
-                  db:
-                    condition: service_healthy
-                restart: unless-stopped
-                networks: [ investor_net ]
-
-            networks:
-              investor_net:
-
-            volumes:
-              investor_db_data:
-            YML
-
-            docker compose --project-name raiseup down --remove-orphans || true
-            docker compose --project-name raiseup pull
-            docker compose --project-name raiseup up -d
-            docker compose --project-name raiseup exec -T db sh -lc 'until pg_isready -U "$POSTGRES_USER" -h 127.0.0.1; do sleep 1; done'
-            docker compose --project-name raiseup exec -T api sh -lc 'npx prisma migrate deploy --schema /app/prisma/schema.prisma || true'
+            chmod +x ~/raiseup/deploy.sh
+            ~/raiseup/deploy.sh

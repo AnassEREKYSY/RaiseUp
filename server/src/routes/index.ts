@@ -1,18 +1,18 @@
 import { Router } from 'express';
-import authRoutes from './auth.routes';
-import startupRoutes from './startup.routes';
-import investorRoutes from './investor.routes';
-import projectRoutes from './project.routes';
-import matchRoutes from './match.routes';
-import messageRoutes from './message.routes';
-import notificationRoutes from './notification.routes';
+import { requireAuth } from '../middlewares/auth';
+import analytics from './analytics.routes';
+import auth from './auth.routes';
+import connections from './connections.routes';
+import directory from './directory.routes';
+import me from './me.routes';
+import notifications from './notifications.routes';
+import pipeline from './pipeline.routes';
 
 export const router = Router();
-
-router.use('/auth', authRoutes);
-router.use('/startups', startupRoutes);
-router.use('/investors', investorRoutes);
-router.use('/projects', projectRoutes);
-router.use('/matches', matchRoutes);
-router.use('/messages', messageRoutes);
-router.use('/notifications', notificationRoutes);
+router.use('/auth', auth);
+router.use('/me', requireAuth, me);
+router.use('/connections', requireAuth, connections);
+router.use('/notifications', requireAuth, notifications);
+router.use('/pipeline', requireAuth, pipeline);
+router.use('/analytics', requireAuth, analytics);
+router.use('/', requireAuth, directory);
