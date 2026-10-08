@@ -37,6 +37,10 @@ for k in POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB; do
   [ -n "$(env_get $k)" ] || { red "$k is missing (GitHub secret)"; exit 1; }
 done
 
+# Compose gives shell variables priority over .env, and GitHub passes missing secrets as empty
+# strings: drop them from the environment so the values saved in .env are the ones used.
+unset IMAGE_TAG POSTGRES_USER POSTGRES_PASSWORD POSTGRES_DB JWT_SECRET CORS_ORIGIN CLIENT_BIND
+
 # 2. Registry login
 if [ -n "${GHCR_TOKEN:-}" ]; then
   echo "$GHCR_TOKEN" | docker login ghcr.io -u "${GHCR_USER:-anasserekysy}" --password-stdin >/dev/null
