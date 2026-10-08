@@ -1,6 +1,8 @@
 /**
- * Demo data for local development: `npm run seed:demo`.
- * Creates accounts only when their email does not exist yet. Password for all: demo-pass-123
+ * Demo data: `npm run seed:demo` locally, or in production:
+ *   docker exec raiseup-api-1 node dist/scripts/seed-demo.js
+ * Creates accounts only when their email does not exist yet, and the demo activity (connections,
+ * conversations, pipeline, profile views, notifications) only once. Password for all: demo-pass-123
  */
 import 'dotenv/config';
 import bcrypt from 'bcryptjs';
@@ -58,7 +60,123 @@ async function main() {
       },
     });
   }
+  await activity(sUsers, iUsers);
   console.log(`Demo accounts ready (${startups.length} startups, ${investors.length} investors). Password: ${PASSWORD}`);
+}
+
+const ago = (days: number, hours = 0) => new Date(Date.now() - (days * 24 + hours) * 3600_000);
+
+/** Connections, conversations, a deal pipeline and profile views, so every screen has something to show. */
+async function activity(s: { id: string; email: string }[], i: { id: string; email: string }[]) {
+  const by = (list: { id: string; email: string }[], email: string) => list.find(u => u.email === email)!;
+  const anna = by(i, 'anna@seedlane.demo'), marco = by(i, 'marco@verde.demo'), sara = by(i, 'sara@angel.demo'), hugo = by(i, 'hugo@atlas.demo');
+  const yusuf = by(s, 'yusuf@visionqa.demo'), karim = by(s, 'karim@ledgerly.demo'), owen = by(s, 'owen@shelfwise.demo');
+  const ines = by(s, 'ines@greengrid.demo'), lena = by(s, 'lena@northwind.demo'), maya = by(s, 'maya@cargopilot.demo'), clara = by(s, 'clara@fieldsense.demo');
+
+  if (await prisma.match.findFirst({ where: { investorId: anna.id } })) {
+    console.log('Demo activity already present, skipped.');
+    return;
+  }
+  const profileOf = async (userId: string) => (await prisma.investorProfile.findUnique({ where: { userId } }))?.id ?? null;
+  const startupProfile = async (userId: string) => (await prisma.startupProfile.findUnique({ where: { userId } }))!.id;
+
+  type Line = [from: 'S' | 'I', text: string, daysAgo: number, hoursAgo?: number];
+  async function connect(startup: { id: string }, investor: { id: string }, status: 'PENDING' | 'ACCEPTED' | 'REJECTED',
+                         requestedBy: 'S' | 'I', created: number, lines: Line[] = [], meeting?: { daysAgo: number; slots: string[]; accepted?: number }) {
+    const match = await prisma.match.create({
+      data: {
+        startupId: startup.id, investorId: investor.id, investorProfileId: await profileOf(investor.id), status,
+        requestedById: requestedBy === 'S' ? startup.id : investor.id, createdAt: ago(created),
+        respondedAt: status === 'PENDING' ? null : ago(created - 1),
+      },
+    });
+    let last: Date | null = null;
+    for (const [from, content, d, h] of lines) {
+      last = ago(d, h ?? 0);
+      await prisma.message.create({ data: { matchId: match.id, senderId: from === 'S' ? startup.id : investor.id, content, createdAt: last } });
+    }
+    if (meeting) {
+      last = ago(meeting.daysAgo);
+      await prisma.message.create({
+        data: {
+          matchId: match.id, senderId: investor.id, kind: 'MEETING', content: 'Meeting request', createdAt: last,
+          meta: { slots: meeting.slots, note: '30 minutes on video, I will send the link.', status: meeting.accepted !== undefined ? 'ACCEPTED' : 'PROPOSED',
+                  acceptedSlot: meeting.accepted !== undefined ? meeting.slots[meeting.accepted] : null },
+        },
+      });
+    }
+    if (last) await prisma.match.update({ where: { id: match.id }, data: { lastMessageAt: last } });
+    return match;
+  }
+  const slot = (daysAhead: number, hour: number) => { const d = new Date(); d.setDate(d.getDate() + daysAhead); d.setHours(hour, 0, 0, 0); return d.toISOString(); };
+
+  // Anna (investor demo account) and Yusuf (startup demo account) see full conversations.
+  await connect(yusuf, anna, 'ACCEPTED', 'S', 12, [
+    ['S', 'Hi Anna, VisionQA catches defects on factory lines with off-the-shelf cameras. We are raising €600k to deploy at three new plants.', 11, 5],
+    ['I', 'Thanks Yusuf. What does a pilot cost a plant, and how long until it pays for itself?', 11, 2],
+    ['S', 'Around €18k for the first line, and our current customers break even in under five months on scrap savings.', 10, 20],
+    ['I', 'Good numbers. Could you share the deck and two customer references?', 10, 4],
+    ['S', 'Sent both by email. Happy to walk you through the dashboard live.', 9, 3],
+  ], { daysAgo: 6, slots: [slot(2, 10), slot(3, 14), slot(4, 11)], accepted: 1 });
+  await connect(karim, anna, 'ACCEPTED', 'I', 20, [
+    ['I', 'Hi Karim, Ledgerly fits our B2B fintech thesis. Are you open to a first call?', 19],
+    ['S', 'Absolutely. We just passed 400 customers and keep 97% of them year on year.', 18, 6],
+    ['I', 'Impressive retention. Let us set something up next week.', 18, 2],
+  ]);
+  await connect(owen, anna, 'PENDING', 'S', 1);
+  await connect(lena, anna, 'REJECTED', 'S', 25);
+  await connect(yusuf, hugo, 'PENDING', 'S', 3);
+  await connect(yusuf, sara, 'ACCEPTED', 'I', 15, [
+    ['I', 'Your factory use case reminds me of my last company. Keen to hear more.', 14],
+    ['S', 'Thanks Sara! Would you be open to joining as an angel alongside a lead fund?', 13, 8],
+  ], { daysAgo: 2, slots: [slot(5, 9), slot(6, 16)] });
+  await connect(ines, marco, 'ACCEPTED', 'I', 9, [
+    ['I', 'GreenGrid is exactly the kind of hardware-plus-software we back.', 8],
+    ['S', 'Great to hear. Our battery scheduling cuts grid fees by 22% on average.', 7, 3],
+  ]);
+  await connect(maya, hugo, 'ACCEPTED', 'S', 30, [['S', 'Hi Hugo, CargoPilot is raising its Series A.', 29], ['I', 'Send me your unit economics, please.', 28]]);
+  await connect(clara, marco, 'PENDING', 'S', 2);
+
+  // Anna's deal pipeline
+  const pipeline: [{ id: string }, string, string][] = [
+    [karim, 'MEETING', 'Strong retention, check churn by plan.'],
+    [yusuf, 'DUE_DILIGENCE', 'Call booked. Ask for plant-level ROI data.'],
+    [owen, 'CONTACTED', 'Small round, could co-invest with an angel.'],
+    [by(s, 'theo@tutorloop.demo'), 'INTERESTED', 'Too early, follow up after the pilot.'],
+    [maya, 'PASSED', 'Outside our ticket size.'],
+  ];
+  for (const [[u, stage, notes], position] of pipeline.map((p, k) => [p, k] as const)) {
+    await prisma.pipelineItem.upsert({
+      where: { userId_startupId: { userId: anna.id, startupId: await startupProfile(u.id) } }, update: {},
+      create: { userId: anna.id, startupId: await startupProfile(u.id), stage, notes, position },
+    });
+  }
+
+  // Profile views over the last 30 days (analytics charts)
+  const viewers = [...i, ...s];
+  for (const target of [yusuf, karim, anna]) {
+    const isStartup = s.includes(target);
+    const profileId = isStartup ? await startupProfile(target.id) : (await profileOf(target.id))!;
+    const views = [];
+    for (let d = 0; d < 30; d++) {
+      const n = (d * 7 + target.email.length) % 4 + (d < 7 ? 2 : 0);
+      for (let k = 0; k < n; k++) {
+        const viewer = viewers[(d + k) % viewers.length];
+        if (viewer.id !== target.id) views.push({ viewerId: viewer.id, profileType: isStartup ? 'STARTUP' : 'INVESTOR', profileId, createdAt: ago(d, k * 3) });
+      }
+    }
+    await prisma.profileView.createMany({ data: views });
+  }
+
+  await prisma.notification.createMany({
+    data: [
+      { userId: anna.id, type: 'CONNECTION_REQUEST', message: 'Owen Novak (Shelfwise) wants to connect', link: '/connections', createdAt: ago(1) },
+      { userId: anna.id, type: 'MEETING_ACCEPTED', message: 'Yusuf Okafor accepted your meeting', link: '/inbox', createdAt: ago(5) },
+      { userId: yusuf.id, type: 'MEETING_PROPOSED', message: 'Sara Ishikawa proposed a meeting', link: '/inbox', createdAt: ago(2) },
+      { userId: yusuf.id, type: 'CONNECTION_ACCEPTED', message: 'Anna Lindqvist accepted your request', link: '/inbox', createdAt: ago(11) },
+    ],
+  });
+  console.log('Demo activity added: connections, conversations, meetings, pipeline, profile views, notifications.');
 }
 
 main().finally(() => prisma.$disconnect());

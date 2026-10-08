@@ -37,3 +37,14 @@ The site calls its API on its own domain (`/api`), so the API subdomains are no 
 | `JWT_SECRET` | Optional. If missing, `deploy.sh` generates one once and keeps it in `~/raiseup/.env` |
 
 Optional variable `RAISEUP_CLIENT_BIND=127.0.0.1` closes port 3000 to the outside once the proxy uses the container name.
+
+## Demo data
+
+Fills the live database with 8 startups, 4 investors and their activity (connections, conversations, a meeting,
+an investor pipeline, profile views, notifications). Safe to run twice: existing accounts and activity are kept.
+
+```bash
+docker exec raiseup-api-1 node dist/scripts/seed-demo.js
+```
+
+Demo accounts (password `demo-pass-123`): `anna@seedlane.demo` (investor) and `yusuf@visionqa.demo` (startup).
