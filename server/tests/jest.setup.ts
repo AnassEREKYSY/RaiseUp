@@ -1,1 +1,2 @@
-process.env.JWT_SECRET = 'test_secret';
+process.env.JWT_SECRET = 'test-secret';
+process.env.NODE_ENV = 'test';

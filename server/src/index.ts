@@ -1,25 +1,26 @@
-import app from './app';
 import 'dotenv/config';
 import http from 'http';
 import { Server } from 'socket.io';
-import { prisma } from './prisma';
+import { createApp } from './app';
+import { config } from './config';
+import { setIo } from './lib/realtime';
+import { verifyToken } from './middlewares/auth';
 
-const port = process.env.PORT || 4000;
-const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: ['http://localhost:4200'] } });
+const server = http.createServer(createApp());
+const io = new Server(server, { path: '/api/socket.io', cors: { origin: config.corsOrigins, credentials: true } });
 
-io.on('connection', (socket) => {
-  socket.on('join', (matchId: string) => socket.join(matchId));
+// Each user joins a private room; the API emits messages and notifications to it.
+io.use((socket, next) => {
+  try {
+    const token = String(socket.handshake.auth?.token ?? '');
+    const u = verifyToken(token);
+    socket.data.userId = u.id;
+    next();
+  } catch {
+    next(new Error('unauthorized'));
+  }
 });
+io.on('connection', socket => { socket.join(`user:${socket.data.userId}`); });
+setIo(io);
 
-app.post('/messages/create-socket', async (req, res) => {
-  const senderId = (req as any).user?.id;
-  const { matchId, content } = req.body || {};
-  if (!senderId || !matchId || !content) return res.status(400).json({ message: 'missing fields' });
-
-  const msg = await prisma.message.create({ data: { matchId, senderId, content }, include: { sender: true } });
-  io.to(matchId).emit('message:new', msg);
-  res.status(201).json(msg);
-});
-
-server.listen(port, () => console.log(`API running on http://localhost:${port}`));
+server.listen(config.port, () => console.log(`API on http://localhost:${config.port}`));
